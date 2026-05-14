@@ -34,14 +34,14 @@ def load_model(checkpoint_path: str) -> VGGTOmega:
     return model.to("cuda")
 
 
-def run_model(target_dir: str, model: VGGTOmega) -> dict:
+def run_model(target_dir: str, model: VGGTOmega, image_resolution: int) -> dict:
     print(f"Processing images from {target_dir}")
 
     image_names = sorted(glob.glob(os.path.join(target_dir, "images", "*")))
     if len(image_names) == 0:
         raise gr.Error("No images found. Please upload images or a video first.")
 
-    images = load_and_preprocess_images(image_names, image_resolution=512).to("cuda")
+    images = load_and_preprocess_images(image_names, image_resolution=image_resolution).to("cuda")
     print(f"Preprocessed images shape: {tuple(images.shape)}")
 
     with torch.inference_mode():
@@ -163,6 +163,7 @@ def update_gallery_on_upload(input_video, input_images, video_sample_fps):
 def gradio_demo(
     target_dir,
     model,
+    image_resolution,
     conf_thres=20.0,
     mask_black_bg=False,
     mask_white_bg=False,
@@ -181,7 +182,7 @@ def gradio_demo(
     target_dir_images = os.path.join(target_dir, "images")
     all_files = sorted(os.listdir(target_dir_images))
 
-    predictions = run_model(target_dir, model)
+    predictions = run_model(target_dir, model, image_resolution)
     prediction_save_path = os.path.join(target_dir, "predictions.npz")
     np.savez(prediction_save_path, **predictions)
 
@@ -295,7 +296,7 @@ def update_visual_log():
     return "Updating visualization..."
 
 
-def build_ui(model: VGGTOmega):
+def build_ui(model: VGGTOmega, image_resolution: int):
     def reconstruct(
         target_dir,
         conf_thres,
@@ -308,6 +309,7 @@ def build_ui(model: VGGTOmega):
         return gradio_demo(
             target_dir,
             model,
+            image_resolution,
             conf_thres,
             mask_black_bg,
             mask_white_bg,
@@ -479,7 +481,8 @@ def build_ui(model: VGGTOmega):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="VGGT-Omega Gradio demo")
-    parser.add_argument("--checkpoint", required=True, help="Local VGGT-Omega-1B-512 checkpoint path.")
+    parser.add_argument("--checkpoint", required=True, help="Local VGGT-Omega checkpoint path.")
+    parser.add_argument("--image-resolution", type=int, default=512, help="Input image resolution. Default: 512.")
     parser.add_argument("--server-name", default="0.0.0.0")
     parser.add_argument("--server-port", type=int, default=7860)
     parser.add_argument("--share", action="store_true")
@@ -490,7 +493,7 @@ def main():
     args = parse_args()
     print(f"Loading checkpoint from {args.checkpoint}")
     model = load_model(args.checkpoint)
-    demo = build_ui(model)
+    demo = build_ui(model, args.image_resolution)
     demo.queue(max_size=20).launch(
         server_name=args.server_name,
         server_port=args.server_port,
