@@ -1,7 +1,7 @@
 [project]
 name = "vggt-omega"
 version = "0.0.1"
-description = "Inference release for VGGT-Omega."
+description = "VGGT-Omega feed-forward camera and depth reconstruction."
 readme = "README.md"
 requires-python = ">=3.10"
 license = {file = "LICENSE"}

@@ -16,7 +16,7 @@ import gradio as gr
 import numpy as np
 import torch
 
-from visual_util import SkySegDownloadError, predictions_to_glb
+from visual_util import predictions_to_glb
 from vggt_omega.models import VGGTOmega
 from vggt_omega.utils.load_fn import load_and_preprocess_images
 from vggt_omega.utils.pose_enc import pose_encoding_to_extri_intri
@@ -195,20 +195,17 @@ def gradio_demo(
         mask_sky,
         max_points_k,
     )
-    try:
-        scene = predictions_to_glb(
-            predictions,
-            conf_thres=conf_thres,
-            mask_black_bg=mask_black_bg,
-            mask_white_bg=mask_white_bg,
-            show_cam=show_cam,
-            mask_sky=mask_sky,
-            target_dir=target_dir,
-            max_points=int(max_points_k * 1000),
-        )
-        scene.export(file_obj=glbfile)
-    except SkySegDownloadError as error:
-        return None, f"{error} Inference is complete; after placing the file, click Update Visual."
+    scene = predictions_to_glb(
+        predictions,
+        conf_thres=conf_thres,
+        mask_black_bg=mask_black_bg,
+        mask_white_bg=mask_white_bg,
+        show_cam=show_cam,
+        mask_sky=mask_sky,
+        target_dir=target_dir,
+        max_points=int(max_points_k * 1000),
+    )
+    scene.export(file_obj=glbfile)
 
     del predictions
     gc.collect()
@@ -266,20 +263,17 @@ def update_visualization(
     if not os.path.exists(glbfile):
         with np.load(predictions_path) as loaded:
             predictions = {key: np.array(loaded[key]) for key in loaded.files}
-        try:
-            scene = predictions_to_glb(
-                predictions,
-                conf_thres=conf_thres,
-                mask_black_bg=mask_black_bg,
-                mask_white_bg=mask_white_bg,
-                show_cam=show_cam,
-                mask_sky=mask_sky,
-                target_dir=target_dir,
-                max_points=int(max_points_k * 1000),
-            )
-            scene.export(file_obj=glbfile)
-        except SkySegDownloadError as error:
-            return None, str(error)
+        scene = predictions_to_glb(
+            predictions,
+            conf_thres=conf_thres,
+            mask_black_bg=mask_black_bg,
+            mask_white_bg=mask_white_bg,
+            show_cam=show_cam,
+            mask_sky=mask_sky,
+            target_dir=target_dir,
+            max_points=int(max_points_k * 1000),
+        )
+        scene.export(file_obj=glbfile)
 
     return glbfile, "Visualization updated."
 

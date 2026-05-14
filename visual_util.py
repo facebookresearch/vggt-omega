@@ -14,10 +14,6 @@ from matplotlib import colormaps
 from scipy.spatial.transform import Rotation
 
 
-class SkySegDownloadError(RuntimeError):
-    pass
-
-
 def predictions_to_glb(
     predictions: dict,
     conf_thres: float = 20.0,
@@ -274,21 +270,10 @@ def run_skyseg(onnx_session, input_size: list[int], image: np.ndarray) -> np.nda
 
 def download_file_from_url(url: str, filename: str) -> None:
     tmp_filename = f"{filename}.tmp"
-    try:
-        response = requests.get(url, stream=True)
-        response.raise_for_status()
+    response = requests.get(url, stream=True)
+    response.raise_for_status()
 
-        with open(tmp_filename, "wb") as f:
-            for chunk in response.iter_content(chunk_size=8192):
-                f.write(chunk)
-        os.replace(tmp_filename, filename)
-    except (OSError, requests.RequestException) as error:
-        if os.path.exists(tmp_filename):
-            try:
-                os.remove(tmp_filename)
-            except OSError:
-                pass
-        raise SkySegDownloadError(
-            "Filter Sky could not download skyseg.onnx automatically. "
-            f"Download it from {url} and place it at {os.path.abspath(filename)}."
-        ) from error
+    with open(tmp_filename, "wb") as f:
+        for chunk in response.iter_content(chunk_size=8192):
+            f.write(chunk)
+    os.replace(tmp_filename, filename)

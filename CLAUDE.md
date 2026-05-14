@@ -48,8 +48,8 @@ simple, readable, and easy for researchers to modify.
   keep defaults in the constructor signature or next to the module construction
   that uses them.
 - When renaming modules or attributes that can change `state_dict` keys, record
-  the old and new key prefixes in `docs/checkpoint_key_renames.md` in the same
-  change.
+  the old and new key prefixes in the same change before exporting release
+  checkpoints.
 - Do not expose switches for unreleased capabilities such as point, track,
   training, or fine-tuning.
 - Keep preprocessing defaults, such as checkpoint-specific image size, outside
@@ -206,11 +206,13 @@ simple, readable, and easy for researchers to modify.
   language in the public README unless the section is explicitly a changelog or
   roadmap. The README should present the current release as usable.
 - Public docs should not make unnecessary promises or refusals about workflows
-  that are absent. Internal docs such as `docs/release_progress.md` may track
-  scope and history, but user-facing docs should focus on what works.
+  that are absent.
 - Keep the README focused on installation, checkpoint loading, camera/depth
   inference, camera/register token outputs, text-alignment usage, visualization
-  and export pointers, license, and citation. Put deeper details in docs.
+  and export pointers, license, and citation.
+- Keep public docs minimal and close to the public VGGT style. The `docs/`
+  folder should only contain lightweight supporting pages such as
+  `docs/package.md`, not many small topic pages.
 - README checkpoint examples should use explicit `torch.load` and
   `model.load_state_dict`, not `from_pretrained`, `from_checkpoint`, or
   `PyTorchModelHubMixin`.
