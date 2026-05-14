@@ -1,4 +1,5 @@
 gradio==5.17.1
+gradio-client==1.7.1
 opencv-python
 trimesh
 matplotlib
