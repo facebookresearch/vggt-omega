@@ -19,7 +19,7 @@ class CameraHead(nn.Module):
 
         self.token_norm = nn.LayerNorm(dim_in, eps=1e-5)
         self.input_proj = nn.Identity()
-        # Head-local transformer blocks that mix special tokens across frames.
+        # Head-local transformer blocks that mix camera and register tokens across frames.
         self.trunk = nn.ModuleList(
             [
                 SelfAttentionBlock(
@@ -46,30 +46,30 @@ class CameraHead(nn.Module):
     def forward(
         self,
         aggregated_tokens_list: list[torch.Tensor],
-        patch_start_idx: int,
+        patch_token_start: int,
     ) -> torch.Tensor:
         tokens = aggregated_tokens_list[-1]
         batch_size, num_frames, num_tokens, _ = tokens.shape
 
-        if patch_start_idx is None:
-            raise ValueError("patch_start_idx is required for CameraHead")
-        if patch_start_idx > num_tokens:
-            raise ValueError(f"patch_start_idx ({patch_start_idx}) exceeds token length ({num_tokens})")
+        if patch_token_start is None:
+            raise ValueError("patch_token_start is required for CameraHead")
+        if patch_token_start > num_tokens:
+            raise ValueError(f"patch_token_start ({patch_token_start}) exceeds token length ({num_tokens})")
 
         if tokens.dtype != torch.float32:
             tokens = tokens.float()
 
-        special_tokens = tokens[:, :, :patch_start_idx]
-        special_tokens = self.token_norm(special_tokens)
-        special_tokens = self.input_proj(special_tokens)
+        camera_and_register_tokens = tokens[:, :, :patch_token_start]
+        camera_and_register_tokens = self.token_norm(camera_and_register_tokens)
+        camera_and_register_tokens = self.input_proj(camera_and_register_tokens)
 
-        special_tokens = special_tokens.reshape(batch_size, num_frames * patch_start_idx, -1)
+        camera_and_register_tokens = camera_and_register_tokens.reshape(batch_size, num_frames * patch_token_start, -1)
         rope_sincos = None
         for block in self.trunk:
-            special_tokens = block(special_tokens, rope_sincos)
+            camera_and_register_tokens = block(camera_and_register_tokens, rope_sincos)
 
-        special_tokens = special_tokens.reshape(batch_size, num_frames, patch_start_idx, -1)
-        pose_tokens = self.trunk_norm(special_tokens[:, :, 0])
+        camera_and_register_tokens = camera_and_register_tokens.reshape(batch_size, num_frames, patch_token_start, -1)
+        pose_tokens = self.trunk_norm(camera_and_register_tokens[:, :, 0])
         return _apply_pose_activation(self.pose_branch(pose_tokens))
 
 

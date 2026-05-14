@@ -73,3 +73,21 @@ wires the aggregator and heads together.
 `state_dict` key prefixes:
 
 - `patch_embed.` -> `aggregator.patch_embed.`
+
+## 2026-05-14: Aggregator Naming Pass
+
+Code names:
+
+- `special_global_block_indices` -> `register_attention_block_indices`
+- `global_attn_modes` -> `inter_frame_attention_types`
+- `_run_global_block` -> `_run_inter_frame_attention_block`
+- `patch_start_idx` -> `patch_token_start`
+- `special_tokens` -> `camera_and_register_tokens`
+- `aggregator.global_blocks` -> `aggregator.inter_frame_blocks`
+
+`state_dict` key prefixes:
+
+- `aggregator.global_blocks.` -> `aggregator.inter_frame_blocks.`
+
+The other renames in this pass are constructor arguments, local variables, or
+forward arguments, and do not affect checkpoint keys.

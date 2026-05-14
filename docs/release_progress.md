@@ -176,10 +176,10 @@ public code path:
 - Removed global RoPE, gradient checkpointing leftovers, and custom ViT init
   helpers.
 
-The release aggregator keeps the trained behavior fixed: frame/global
-alternating attention, camera/register special tokens, max-normalized RoPE on
-frame patch tokens, Q/K normalization, and special-only global attention at
-blocks `[2, 6, 9, 14, 20]`.
+The release aggregator keeps the trained behavior fixed: alternating frame and
+inter-frame attention, camera/register tokens, max-normalized RoPE on
+frame patch tokens, Q/K normalization, and register attention at blocks
+`[2, 6, 9, 14, 20]`.
 
 No checkpoint key rename was needed for this pass.
 
@@ -194,12 +194,36 @@ module into `Aggregator.forward()`.
 This makes the release inference path read as:
 
 - `VGGTOmega`: input handling, precision policy, and heads.
-- `Aggregator`: image normalization, DINOv3 patch embedding, special tokens,
+- `Aggregator`: image normalization, DINOv3 patch embedding, camera/register tokens,
   RoPE, and alternating attention.
 
 This pass changed checkpoint key ownership:
 
 - `patch_embed.` -> `aggregator.patch_embed.`
+
+The mapping is recorded in `docs/checkpoint_key_renames.md` and applied by
+`VGGTOmega.from_checkpoint()`.
+
+## Aggregator Naming: Pass 1
+
+Status: complete.
+
+Aggregator names now follow the paper terminology more closely:
+
+- `special_global_block_indices` -> `register_attention_block_indices`
+- `global_attn_modes` -> `inter_frame_attention_types`
+- mode strings `"all"` / `"specials"` -> `"global"` / `"register"`
+- `_run_global_block` -> `_run_inter_frame_attention_block`
+- `patch_start_idx` -> `patch_token_start`
+- `special_tokens` -> `camera_and_register_tokens`
+
+`frame_blocks` was intentionally kept unchanged. `global_blocks` was renamed to
+`inter_frame_blocks` because those blocks now represent either full global
+attention or register attention, depending on `inter_frame_attention_types`.
+
+This pass changed one checkpoint key prefix:
+
+- `aggregator.global_blocks.` -> `aggregator.inter_frame_blocks.`
 
 The mapping is recorded in `docs/checkpoint_key_renames.md` and applied by
 `VGGTOmega.from_checkpoint()`.

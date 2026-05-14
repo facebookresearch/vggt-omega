@@ -15,7 +15,7 @@ class SequenceAlignmentStudent(nn.Module):
         self.sequence_token = nn.Parameter(torch.zeros(1, 1, dim_in))
         nn.init.trunc_normal_(self.sequence_token, std=0.02)
 
-        # Head-local transformer blocks that mix special tokens across frames.
+        # Head-local transformer blocks that mix camera and register tokens across frames.
         self.trunk = nn.ModuleList(
             [
                 SelfAttentionBlock(
@@ -40,23 +40,23 @@ class SequenceAlignmentStudent(nn.Module):
             nn.Linear(dim_in // 2, dim_in, bias=True),
         )
 
-    def forward(self, tokens: torch.Tensor, patch_start_idx: int) -> dict[str, torch.Tensor]:
-        if patch_start_idx is None:
-            raise ValueError("patch_start_idx is required for alignment student")
-        if patch_start_idx > tokens.shape[2]:
-            raise ValueError(f"patch_start_idx ({patch_start_idx}) exceeds token length ({tokens.shape[2]})")
+    def forward(self, tokens: torch.Tensor, patch_token_start: int) -> dict[str, torch.Tensor]:
+        if patch_token_start is None:
+            raise ValueError("patch_token_start is required for alignment student")
+        if patch_token_start > tokens.shape[2]:
+            raise ValueError(f"patch_token_start ({patch_token_start}) exceeds token length ({tokens.shape[2]})")
 
         if tokens.dtype != torch.float32:
             tokens = tokens.float()
 
         batch_size, num_frames, _, _ = tokens.shape
-        special_tokens = tokens[:, :, :patch_start_idx]
-        special_tokens = self.token_norm(special_tokens)
-        special_tokens = self.input_proj(special_tokens)
-        special_tokens = special_tokens.reshape(batch_size, num_frames * patch_start_idx, -1)
+        camera_and_register_tokens = tokens[:, :, :patch_token_start]
+        camera_and_register_tokens = self.token_norm(camera_and_register_tokens)
+        camera_and_register_tokens = self.input_proj(camera_and_register_tokens)
+        camera_and_register_tokens = camera_and_register_tokens.reshape(batch_size, num_frames * patch_token_start, -1)
 
         sequence_token = self.sequence_token.expand(batch_size, -1, -1)
-        joint_tokens = torch.cat([sequence_token, special_tokens], dim=1)
+        joint_tokens = torch.cat([sequence_token, camera_and_register_tokens], dim=1)
         rope_sincos = None
         for block in self.trunk:
             joint_tokens = block(joint_tokens, rope_sincos)
@@ -79,6 +79,6 @@ class TextAlignmentHead(nn.Module):
     def forward(
         self,
         aggregated_tokens_list: list[torch.Tensor],
-        patch_start_idx: int,
+        patch_token_start: int,
     ) -> dict[str, torch.Tensor]:
-        return self.student(aggregated_tokens_list[-1], patch_start_idx)
+        return self.student(aggregated_tokens_list[-1], patch_token_start)

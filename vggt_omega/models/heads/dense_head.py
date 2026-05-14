@@ -73,17 +73,17 @@ class DenseHead(nn.Module):
         self,
         aggregated_tokens_list: list[torch.Tensor],
         images: torch.Tensor,
-        patch_start_idx: int,
+        patch_token_start: int,
     ) -> tuple[torch.Tensor, torch.Tensor]:
-        if patch_start_idx is None:
-            raise ValueError("patch_start_idx is required for DenseHead")
+        if patch_token_start is None:
+            raise ValueError("patch_token_start is required for DenseHead")
 
         batch_size, num_frames, _, height, width = images.shape
         patch_h, patch_w = height // self.patch_size, width // self.patch_size
 
         multi_scale_features = []
         for feature_idx, layer_idx in enumerate(self.intermediate_layer_idx):
-            x = aggregated_tokens_list[layer_idx][:, :, patch_start_idx:]
+            x = aggregated_tokens_list[layer_idx][:, :, patch_token_start:]
             if x.dtype != torch.float32:
                 x = x.float()
 

@@ -11,6 +11,7 @@ from vggt_omega.models.heads import CameraHead, DenseHead, TextAlignmentHead
 
 checkpoint_key_renames = [
     ("patch_embed.", "aggregator.patch_embed."),
+    ("aggregator.global_blocks.", "aggregator.inter_frame_blocks."),
     ("depth_head.", "dense_head."),
     ("camera_head.extra_attention_pre_norm.", "camera_head.token_norm."),
     ("camera_head.extra_attention_blocks.", "camera_head.trunk."),
@@ -71,21 +72,21 @@ class VGGTOmega(nn.Module):
 
         amp_dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
         with torch.autocast(device_type="cuda", dtype=amp_dtype):
-            aggregated_tokens_list, patch_start_idx = self.aggregator(images)
+            aggregated_tokens_list, patch_token_start = self.aggregator(images)
 
         predictions = {}
         with torch.autocast(device_type="cuda", enabled=False):
             if self.camera_head is not None:
                 predictions["pose_enc"] = self.camera_head(
                     aggregated_tokens_list,
-                    patch_start_idx=patch_start_idx,
+                    patch_token_start=patch_token_start,
                 )
 
             if self.dense_head is not None:
                 depth, depth_conf = self.dense_head(
                     aggregated_tokens_list,
                     images=images,
-                    patch_start_idx=patch_start_idx,
+                    patch_token_start=patch_token_start,
                 )
                 predictions["depth"] = depth
                 predictions["depth_conf"] = depth_conf
@@ -94,7 +95,7 @@ class VGGTOmega(nn.Module):
                 predictions.update(
                     self.alignment_head(
                         aggregated_tokens_list,
-                        patch_start_idx=patch_start_idx,
+                        patch_token_start=patch_token_start,
                     )
                 )
 
