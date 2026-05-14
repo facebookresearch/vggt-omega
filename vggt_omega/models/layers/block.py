@@ -13,10 +13,6 @@ from .ffn_layers import Mlp
 from .layer_scale import LayerScale  # , DropPath
 from .utils import cat_keep_shapes, uncat_with_shapes
 
-torch._dynamo.config.automatic_dynamic_shapes = False
-torch._dynamo.config.accumulated_cache_size_limit = 1024
-
-
 class SelfAttentionBlock(nn.Module):
     def __init__(
         self,
