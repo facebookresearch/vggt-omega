@@ -22,15 +22,6 @@
 **<sup>1</sup>[Visual Geometry Group, University of Oxford](https://www.robots.ox.ac.uk/~vgg/)**; **<sup>2</sup>[Meta AI](https://ai.facebook.com/research/)**
 </div>
 
-```bibtex
-@inproceedings{wang2026vggtomega,
-  title={VGGT-{$\Omega$}},
-  author={Wang, Jianyuan and Chen, Minghao and Zhang, Shangzhan and Karaev, Nikita and Sch{\"o}nberger, Johannes and Labatut, Patrick and Bojanowski, Piotr and Novotny, David and Vedaldi, Andrea and Rupprecht, Christian},
-  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
-  year={2026}
-}
-```
-
 ## Pretrained models
 
 | Model | Resolution | Text alignment | Download |
@@ -83,6 +74,8 @@ camera_tokens = camera_and_register_tokens[:, :, :1]
 registers = camera_and_register_tokens[:, :, 1:]
 ```
 
+For the text-aligned checkpoint, use `VGGTOmega(enable_alignment=True)` with `image_resolution=256` and read `predictions["text_alignment_embedding"]`.
+
 
 ## Interactive Demo
 
@@ -111,3 +104,11 @@ this code is made available.
 
 [^release]: This Release is intended to support the open source research community.
 
+```bibtex
+@inproceedings{wang2026vggtomega,
+  title={VGGT-{$\Omega$}},
+  author={Wang, Jianyuan and Chen, Minghao and Zhang, Shangzhan and Karaev, Nikita and Sch{\"o}nberger, Johannes and Labatut, Patrick and Bojanowski, Piotr and Novotny, David and Vedaldi, Andrea and Rupprecht, Christian},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  year={2026}
+}
+```
