@@ -249,7 +249,7 @@ def update_visualization(
     if not os.path.exists(predictions_path):
         return None, "No reconstruction available. Click Reconstruct first."
 
-    conf_thres = max(2.0, float(conf_thres))
+    conf_thres = max(3.0, float(conf_thres))
 
     glbfile = glb_path(
         target_dir,
