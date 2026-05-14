@@ -16,7 +16,6 @@ class VGGTOmega(nn.Module):
 
     def __init__(
         self,
-        img_size: int = 512,
         patch_size: int = 16,
         embed_dim: int = 1024,
         enable_camera: bool = True,
@@ -24,8 +23,6 @@ class VGGTOmega(nn.Module):
         enable_alignment: bool = False,
     ) -> None:
         super().__init__()
-
-        self.img_size = img_size
 
         self.patch_embed = _build_patch_embed(patch_size=patch_size, embed_dim=embed_dim)
         _warn_if_rope_not_max("patch_embed", self.patch_embed.rope_embed)
@@ -49,9 +46,6 @@ class VGGTOmega(nn.Module):
         state_dict = _checkpoint_state_dict(checkpoint)
         if enable_alignment is None:
             enable_alignment = any(key.startswith("alignment_head.student.") for key in state_dict)
-        metadata = _checkpoint_metadata(checkpoint)
-        if "img_size" not in kwargs and "image_size" in metadata:
-            kwargs["img_size"] = metadata["image_size"]
         model = cls(enable_alignment=enable_alignment, **kwargs)
         model.load_state_dict(state_dict, strict=strict)
         return model
@@ -146,12 +140,6 @@ def _checkpoint_state_dict(checkpoint: Any) -> dict[str, torch.Tensor]:
     if isinstance(checkpoint, dict):
         return checkpoint
     raise TypeError(f"Unsupported checkpoint type: {type(checkpoint)!r}")
-
-
-def _checkpoint_metadata(checkpoint: Any) -> dict[str, Any]:
-    if isinstance(checkpoint, dict) and isinstance(checkpoint.get("meta"), dict):
-        return checkpoint["meta"]
-    return {}
 
 
 def _warn_if_rope_not_max(name: str, rope_embed: Any) -> None:

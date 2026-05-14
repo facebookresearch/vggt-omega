@@ -153,8 +153,8 @@ release components:
 - `TextAlignmentHead`
 
 This lets `VGGTOmega` instantiate those modules with simple public-style
-arguments such as `img_size`, `patch_size`, `embed_dim`, and feature toggles,
-instead of carrying checkpoint-specific `_build_aggregator()` or
+arguments such as `patch_size`, `embed_dim`, and feature toggles, instead of
+carrying checkpoint-specific `_build_aggregator()` or
 `_build_depth_head()` helper functions in the model entry file.
 
 The file still keeps release-specific helpers for checkpoint loading,
@@ -178,11 +178,11 @@ release checkpoint:
 - Kept `alignment_head.student.*` parameters for release inference.
 
 `VGGTOmega.from_checkpoint()` detects `alignment_head.student.*` keys and
-constructs the student-only alignment head automatically. It also reads the
-clean checkpoint metadata so the text-aligned checkpoint records
-`img_size=256`, while the default no-alignment checkpoint remains `img_size=512`.
-The release code does not instantiate Qwen and does not depend on
-`transformers`.
+constructs the student-only alignment head automatically. Checkpoint metadata
+can still record preprocessing information such as image size, but the
+`nn.Module` does not store that metadata unless it is needed for forward or
+module construction. The release code does not instantiate Qwen and does not
+depend on `transformers`.
 
 Verification on the 8 example frames resized to 256 matched dirty code exactly
 when dirty code was run with the same training-time precision policy

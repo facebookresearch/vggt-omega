@@ -38,16 +38,16 @@ simple, readable, and easy for researchers to modify.
   `_build_*` block inside `VGGTOmega`.
 - Avoid private builder functions when the same clarity can be achieved with
   direct module construction and good defaults.
-- Expose a small public constructor with familiar arguments such as `img_size`,
+- Expose a small public constructor with familiar arguments such as
   `patch_size`, `embed_dim`, and the feature toggles we actually release.
 - Put simple constructor defaults directly in the signature. Do not add
   `DEFAULT_*` constants or duplicate `self.*` attributes unless another part of
   the code actually needs to read them.
 - Do not expose switches for unreleased capabilities such as point, track,
   training, or fine-tuning.
-- Treat `img_size` as the release/default preprocessing size unless code
-  explicitly needs it for module construction. The DINOv3 ViT patch embedder
-  can keep its own internal construction size.
+- Keep preprocessing defaults, such as checkpoint-specific image size, outside
+  the `nn.Module` unless the forward pass or module construction actually needs
+  them.
 - If a change is intended to be a cleanup or reorganization only, verify it
   against dirty code before considering it done.
 
