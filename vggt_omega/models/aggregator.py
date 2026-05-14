@@ -6,7 +6,6 @@
 
 import torch
 import torch.nn as nn
-from torch.utils.checkpoint import checkpoint
 from functools import partial
 from typing import Optional, Tuple, List, Any
 import math
@@ -56,28 +55,6 @@ def init_weights_vit(module: nn.Module, name: str = "") -> None:
         module.reset_parameters()
 
 
-def init_weights_pi3(module: nn.Module, name: str = "") -> None:
-    """
-    Initialize common layers with Pi3-style defaults.
-    - Linear: PyTorch default (kaiming_uniform for weights, uniform for bias)
-    - LayerNorm/LayerScale/PatchEmbed/RMSNorm: call their reset_parameters
-
-    This matches Pi3's initialization where no custom weight init is applied
-    to Linear layers, only the special layers are reset.
-    """
-    # NOTE: We do NOT re-initialize Linear layers here.
-    # PyTorch's default initialization (kaiming_uniform) is already applied
-    # during nn.Linear construction, so we leave weights and biases as-is.
-    if isinstance(module, nn.LayerNorm):
-        module.reset_parameters()
-    if isinstance(module, LayerScale):
-        module.reset_parameters()
-    if isinstance(module, PatchEmbed):
-        module.reset_parameters()
-    if isinstance(module, RMSNorm):
-        module.reset_parameters()
-
-
 class Aggregator(nn.Module):
     """
     Alternating-attention encoder over video frames, as in VGGT.
@@ -88,8 +65,6 @@ class Aggregator(nn.Module):
       are controlled by `global_attn_mode`
     Special tokens (camera + register) are always kept in front of each frame,
     and RoPE is applied only to patch tokens.
-
-    Tip: enable training mode to activate gradient checkpointing and reduce memory.
 
     Args:
         patch_size (int): Patch size used by the patch embedder.
@@ -118,15 +93,7 @@ class Aggregator(nn.Module):
             camera_token or register_token.
         last_n_global_specials (int): If > 0, override the last N global attention layers to use
             "specials" attention mode. Default is -1 (disabled).
-        uncheckpointed_ratio (float): Fraction of layers (in [0, 1]) that will NOT use
-            gradient checkpointing during training. 0.0 (default) means all layers are
-            checkpointed when use_checkpoint=True; 1.0 disables checkpointing entirely.
-            The uncheckpointed layers are distributed evenly across depth. Only takes
-            effect when use_checkpoint=True.
-        init_mode (str): Weight initialization mode. Options:
-            - "vit": ViT-style (trunc_normal weights std=0.02, zero biases, register_token std=1e-3)
-            - "pi3": Pi3-style (PyTorch defaults for Linear, register_token std=1e-6)
-            Default is "vit" for backward compatibility.
+        mask_k_bias (bool): Whether QKV projections use DINOv3's masked K bias.
     """
 
     def __init__(
@@ -136,7 +103,7 @@ class Aggregator(nn.Module):
         depth: int = 24,
         num_heads: int = 16,
         mlp_ratio: float = 4.0,
-        num_register_tokens: int = 4,
+        num_register_tokens: int = 16,
         block_fn: Any = SelfAttentionBlock,
         qkv_bias: bool = True,
         proj_bias: bool = True,
@@ -148,21 +115,18 @@ class Aggregator(nn.Module):
         rope_freq: Optional[int] = 100,
         rope_dtype: str = "fp32",
         rope_rescale_coords: float | None = None,
-        rope_normalize_coords: str = "separate",
+        rope_normalize_coords: str = "max",
         match_patch_embed_rope_behavior: bool = False,
         init_values: float = 1e-5,
-        global_attn_mode: str = "all",
+        global_attn_mode: str = "specials",
         global_attn_partial_ratio: float = 1.0,
-        global_attn_indices: Optional[List[int]] = None,
+        global_attn_indices: Optional[List[int]] = [2, 6, 9, 14, 20],
         use_dino_clsreg: bool = False,
-        disable_rope_global: bool = False,
+        disable_rope_global: bool = True,
         force_global_attn_specials: bool = False,
-        use_checkpoint: bool = True,
         patch_residual_last_layer: bool = False,
         last_n_global_specials: int = -1,
         mask_k_bias: bool = True,
-        init_mode: str = "vit",
-        uncheckpointed_ratio: float = 0.0,
     ):
         super().__init__()
 
@@ -262,22 +226,6 @@ class Aggregator(nn.Module):
         for name, value in (("_resnet_mean", _RESNET_MEAN), ("_resnet_std", _RESNET_STD)):
             self.register_buffer(name, torch.FloatTensor(value).view(1, 1, 3, 1, 1), persistent=False)
 
-        # Checkpointing setting: use the non-reentrant variant by default
-        self.use_reentrant = False
-        self.use_checkpoint = use_checkpoint
-        logging.info(f"Aggregator use_checkpoint: {self.use_checkpoint}")
-
-        # Determine which layers skip gradient checkpointing (evenly distributed)
-        if not (0.0 <= uncheckpointed_ratio <= 1.0):
-            raise ValueError(f"uncheckpointed_ratio must be in [0, 1], got {uncheckpointed_ratio}")
-        self.uncheckpointed_indices: set = set()
-        if uncheckpointed_ratio > 0.0:
-            for i in range(depth):
-                if math.floor((i + 1) * uncheckpointed_ratio) > math.floor(i * uncheckpointed_ratio):
-                    self.uncheckpointed_indices.add(i)
-            logging.info(f"Aggregator: {len(self.uncheckpointed_indices)}/{depth} layers skip checkpointing "
-                         f"(ratio={uncheckpointed_ratio}, indices={sorted(self.uncheckpointed_indices)})")
-
         if force_global_attn_specials:
             self.global_attn_modes = ["specials" for _ in range(depth)]
         else:
@@ -314,43 +262,22 @@ class Aggregator(nn.Module):
                 self.global_attn_modes[i] = "specials"
             logging.info(f"Aggregator: Set last {last_n_global_specials} global layers to 'specials' attention")
 
-        # Store init_mode for use in init_weights
-        self.init_mode = init_mode
-        if init_mode not in ["vit", "pi3"]:
-            raise ValueError(f"Unknown init_mode: {init_mode}. Must be 'vit' or 'pi3'.")
-        logging.info(f"Aggregator init_mode: {self.init_mode}")
-
         self.init_weights()
 
     def init_weights(self) -> None:
-        """Initialize learnable parameters and positional encodings.
-
-        Initialization depends on self.init_mode:
-        - "vit": ViT-style (trunc_normal weights std=0.02, zero biases, token std=1e-3)
-        - "pi3": Pi3-style (PyTorch defaults for Linear, token std=1e-6)
-        """
+        """Initialize learnable parameters and positional encodings."""
         if self.rope_embed is not None:
             self.rope_embed._init_weights()
 
-        if self.init_mode == "pi3":
-            # Pi3 uses very small std for register token
-            nn.init.normal_(self.camera_token, std=1e-6)
-            nn.init.normal_(self.register_token, std=1e-6)
-            # Pi3 uses PyTorch default init for Linear layers (no custom init)
-            named_apply(init_weights_pi3, self)
-        else:
-            # Default: ViT-style initialization
-            nn.init.normal_(self.camera_token, std=1e-3)
-            nn.init.normal_(self.register_token, std=1e-3)
-            named_apply(init_weights_vit, self)
-
+        nn.init.normal_(self.camera_token, std=1e-3)
+        nn.init.normal_(self.register_token, std=1e-3)
+        named_apply(init_weights_vit, self)
 
     def forward(
         self, 
         images: torch.Tensor, 
         patch_embed_model: nn.Module,
-        patch_embed_out_indices: Optional[List[int]] = None
-    ) -> Tuple[List[torch.Tensor], int, Optional[List[torch.Tensor]]]:
+    ) -> Tuple[List[torch.Tensor], int]:
         """
         Run the alternating-attention encoder.
 
@@ -359,17 +286,12 @@ class Aggregator(nn.Module):
             patch_embed_model: Module that maps images to patch tokens.
                 It may return either a tensor of shape [B*S, P, C] or a dict
                 containing "x_norm_patchtokens".
-            patch_embed_out_indices: Optional list of indices specifying which intermediate 
-                layers of patch_embed_model to return.
-
         Returns:
             - outputs: list of tensors, each of shape [B, S, P, 2 * C], where
               P = 1 + num_register_tokens + HW and the last dimension is the
               concatenation of the per-frame and global representations from
               the same depth step.
             - patch_start_idx: index where patch tokens start (i.e., after specials).
-            - patch_embed_intermediate: Optional list of intermediate features from
-              patch_embed_model if patch_embed_out_indices is provided, otherwise None.
         """
         B, S, C_in, H, W = images.shape
 
@@ -395,12 +317,8 @@ class Aggregator(nn.Module):
         register_token = slice_expand_and_flatten(self.register_token, B, S)
 
 
-        if patch_embed_out_indices is not None:
-            raise ValueError("VGGT-Omega does not use patch_embed_out_indices in inference")
-
         patch_tokens = patch_embed_model(images)
         
-        patch_embed_intermediate = None
         if isinstance(patch_tokens, dict):
             if self.use_dino_clsreg:
                 dino_cls_token = patch_tokens["x_norm_clstoken"]
@@ -486,7 +404,7 @@ class Aggregator(nn.Module):
                 concat_inter = torch.cat([frame_inter, global_inter], dim=-1)
                 output_list.append(concat_inter)
 
-        return output_list, self.patch_start_idx, patch_embed_intermediate
+        return output_list, self.patch_start_idx
 
     def _process_frame_attention(
         self,
@@ -522,11 +440,7 @@ class Aggregator(nn.Module):
                     rope_sin.to(device=tokens.device, dtype=self.rope_dtype),
                     rope_cos.to(device=tokens.device, dtype=self.rope_dtype),
                 )
-            use_ckpt = self.training and self.use_checkpoint and frame_idx not in self.uncheckpointed_indices
-            if use_ckpt:
-                tokens = checkpoint(self.frame_blocks[frame_idx], tokens, current_rope, use_reentrant=self.use_reentrant)
-            else:
-                tokens = self.frame_blocks[frame_idx](tokens, current_rope)
+            tokens = self.frame_blocks[frame_idx](tokens, current_rope)
             frame_idx += 1
             intermediates.append(tokens.view(B, S, P, C))
 
@@ -577,11 +491,7 @@ class Aggregator(nn.Module):
             
         # by default, self.aa_block_size=1, which processes one block at a time
         for _ in range(self.aa_block_size):
-            use_ckpt = self.training and self.use_checkpoint and global_idx not in self.uncheckpointed_indices
-            if use_ckpt:
-                attn_tokens = checkpoint(self.global_blocks[global_idx], attn_tokens, None, use_reentrant=self.use_reentrant)
-            else:
-                attn_tokens = self.global_blocks[global_idx](attn_tokens, None)
+            attn_tokens = self.global_blocks[global_idx](attn_tokens, None)
             global_idx += 1
             # We force self.aa_block_size=1 now, so we don't reconstruct per-frame layout for
             # "intermediates" here. Consumers expect per-frame shapes only at the end of the

@@ -5,7 +5,6 @@
 # LICENSE file in the root directory of this source tree.
 
 import torch
-import torch.nn as nn
 
 
 def position_grid_to_embed(pos_grid: torch.Tensor, embed_dim: int, omega_0: float = 100) -> torch.Tensor:

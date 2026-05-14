@@ -8,6 +8,8 @@ simple, readable, and easy for researchers to modify.
 - Prefer straightforward implementations over framework-like abstractions.
 - Keep APIs small and explicit. A user should be able to understand the main
   inference path by reading a few files.
+- Prefer public-VGGT-style model entry points: the top-level model class should
+  show which modules are connected, not read like a full experiment config.
 - Avoid over-engineering for production safety, service deployment,
   multi-tenant use, or large configuration systems.
 - Use simple Python configs, dataclasses, or small dictionaries when
@@ -25,6 +27,29 @@ simple, readable, and easy for researchers to modify.
 - Add comments only where they clarify non-obvious model or geometry behavior.
 - Match the existing VGGT release style where useful, but simplify it for the
   VGGT-Omega release scope.
+
+## Model and API Structure
+
+- Keep `VGGTOmega` thin. It should mostly assemble the patch embedder,
+  aggregator, heads, and optional alignment head.
+- Put natural architecture defaults in the module that owns them. For example,
+  shared VGGT-Omega defaults for the aggregator, camera head, depth head, and
+  alignment head should live in those class constructors, not in a large
+  `_build_*` block inside `VGGTOmega`.
+- Avoid private builder functions when the same clarity can be achieved with
+  direct module construction and good defaults.
+- Expose a small public constructor with familiar arguments such as `img_size`,
+  `patch_size`, `embed_dim`, and the feature toggles we actually release.
+- Put simple constructor defaults directly in the signature. Do not add
+  `DEFAULT_*` constants or duplicate `self.*` attributes unless another part of
+  the code actually needs to read them.
+- Do not expose switches for unreleased capabilities such as point, track,
+  training, or fine-tuning.
+- Treat `img_size` as the release/default preprocessing size unless code
+  explicitly needs it for module construction. The DINOv3 ViT patch embedder
+  can keep its own internal construction size.
+- If a change is intended to be a cleanup or reorganization only, verify it
+  against dirty code before considering it done.
 
 ## Release Checkpoints
 
@@ -95,6 +120,8 @@ simple, readable, and easy for researchers to modify.
 ## Code Style
 
 - Keep files focused and reasonably short.
+- Prefer simple defaults and direct calls over config dumps, registries, or
+  indirection layers.
 - Use descriptive names for tensors, especially for cameras, depth, masks,
   tokens, and image dimensions.
 - Make defaults work for the common case. Expose only the few parameters users
@@ -104,6 +131,9 @@ simple, readable, and easy for researchers to modify.
 - Do not hide important behavior behind environment variables or implicit
   global state.
 - Preserve camera and geometry convention notes near the code that uses them.
+- For behavior-preserving refactors, compare release outputs against the dirty
+  training-code model on fixed inputs. Bitwise equality is preferred when the
+  precision policy and inputs are identical.
 
 ## DINOv3-Derived Code
 

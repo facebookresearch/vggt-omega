@@ -10,12 +10,11 @@
 
 import contextlib
 import math
-from typing import List, Tuple, Union, Optional
+from typing import List, Tuple
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.checkpoint import checkpoint
 from .head_act import activate_head
 from .utils import create_uv_grid, position_grid_to_embed
 
@@ -36,39 +35,24 @@ class DPTLinearHead(nn.Module):
 
     def __init__(
         self,
-        dim_in: int,
+        dim_in: int = 2048,
         patch_size: int = 16,
-        output_dim: int = 4,
-        activation: str = "inv_log",
+        output_dim: int = 2,
+        activation: str = "exp",
         conf_activation: str = "expp1",
         features: int = 256,
         out_channels: List[int] = [256, 512, 1024, 1024],
         intermediate_layer_idx: List[int] = [4, 11, 17, 23],
-        pos_embed: bool = False,
-        feature_only: bool = False,
+        pos_embed: bool = True,
         eps = 1e-5,
-        disable_conf: bool = False,
-        predict_mask: bool = False,
-        mask_activation: str = "sigmoid",
-        head_features_1: int = None,
-        half_dim_in: bool = False,
         disable_last_layer_amp: bool = True,
         proj_type: str = "linear",
-        mlp_ratio: float = 2.0,
+        mlp_ratio: float = 0.5,
         proj_bias: bool = True,
-        fusion_block_relu_inplace: bool = True,
+        fusion_block_relu_inplace: bool = False,
         use_interpolate_conv2d_upsample: bool = False,
-        **kwargs,
     ) -> None:
         super(DPTLinearHead, self).__init__()
-        if len(kwargs) > 0:
-            print(f"DPTLinearHead ignored kwargs: {kwargs.keys()}")
-
-        self.half_dim_in = half_dim_in
-        if half_dim_in:
-            dim_in = dim_in // 2
-
-        assert feature_only == False, "DPTLinearHead does not support feature_only=True"
 
         if patch_size % 4 != 0:
             raise ValueError(
@@ -81,11 +65,7 @@ class DPTLinearHead(nn.Module):
         self.activation = activation
         self.conf_activation = conf_activation
         self.pos_embed = pos_embed
-        self.feature_only = feature_only
         self.intermediate_layer_idx = intermediate_layer_idx
-        self.disable_conf = disable_conf
-        self.predict_mask = predict_mask
-        self.mask_activation = mask_activation
         self.disable_last_layer_amp = disable_last_layer_amp
         self.final_shuffle_factor = patch_size // 4
         self.use_interpolate_conv2d_upsample = use_interpolate_conv2d_upsample
@@ -136,51 +116,32 @@ class DPTLinearHead(nn.Module):
             relu_inplace=fusion_block_relu_inplace,
         )
 
-        if feature_only:
-            raise AssertionError("DPTLinearHead does not support feature_only=True")
-        else:
-            proj_in_channels = features
-            pred_channels = output_dim - 1
+        proj_in_channels = features
+        pred_channels = output_dim - 1
 
-            self.proj = _make_prediction_head(
-                proj_in_channels,
-                pred_channels * self.final_shuffle_factor ** 2,
-                proj_type=proj_type,
-                mlp_ratio=mlp_ratio,
-                proj_bias=proj_bias,
-            )
+        self.proj = _make_prediction_head(
+            proj_in_channels,
+            pred_channels * self.final_shuffle_factor ** 2,
+            proj_type=proj_type,
+            mlp_ratio=mlp_ratio,
+            proj_bias=proj_bias,
+        )
 
-            if self.disable_conf:
-                self.proj_conf = None
-            else:
-                self.proj_conf = _make_prediction_head(
-                    proj_in_channels,
-                    self.final_shuffle_factor ** 2,
-                    proj_type=proj_type,
-                    mlp_ratio=mlp_ratio,
-                    proj_bias=proj_bias,
-                )
-                _init_small_conf_prediction_head(self.proj_conf)
-
-            if self.predict_mask:
-                self.proj_mask = _make_prediction_head(
-                    proj_in_channels,
-                    self.final_shuffle_factor ** 2,
-                    proj_type=proj_type,
-                    mlp_ratio=mlp_ratio,
-                    proj_bias=proj_bias,
-                )
-            else:
-                self.proj_mask = None
+        self.proj_conf = _make_prediction_head(
+            proj_in_channels,
+            self.final_shuffle_factor ** 2,
+            proj_type=proj_type,
+            mlp_ratio=mlp_ratio,
+            proj_bias=proj_bias,
+        )
+        _init_small_conf_prediction_head(self.proj_conf)
 
     def forward(
         self,
         aggregated_tokens_list: List[torch.Tensor],
         images: torch.Tensor,
         patch_start_idx: int,
-        frames_chunk_size: int = -1,
-        patch_embed_intermediate: Optional[List[torch.Tensor]] = None,
-    ) -> Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor, Optional[torch.Tensor]]]:
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Forward pass through the DPT linear head, supports processing by chunking frames.
         Args:
@@ -188,20 +149,11 @@ class DPTLinearHead(nn.Module):
             images (Tensor): Input images with shape [B, S, 3, H, W], in range [0, 1].
             patch_start_idx (int): Starting index for patch tokens in the token sequence.
                 Used to separate patch tokens from other tokens (e.g., camera or register tokens).
-            frames_chunk_size (int, optional): Number of frames to process in each chunk.
-                If None or larger than S, all frames are processed at once. Default: 8.
-            patch_embed_intermediate (List[Tensor], optional): Unused dummy input passed
-                from the aggregator for interface compatibility with other dense heads.
-
         Returns:
-            Tensor or Tuple[Tensor, Tensor, Optional[Tensor]]:
-                - If feature_only=True: Feature maps with shape [B, S, C, H, W]
-                - Otherwise: Tuple of (predictions, confidence, mask)
-                    where mask has shape [B, S, 1, H, W] if predict_mask=True, else None
+            Tuple of predicted depth and confidence tensors.
         """
-        assert patch_embed_intermediate is None, "DPTLinearHead does not support patch_embed_intermediate"
         B, S, _, H, W = images.shape
-        del B, S, H, W, frames_chunk_size
+        del B, S, H, W
 
         return self._forward_impl(aggregated_tokens_list, images, patch_start_idx)
 
@@ -211,32 +163,23 @@ class DPTLinearHead(nn.Module):
         aggregated_tokens_list: List[torch.Tensor],
         images: torch.Tensor,
         patch_start_idx: int,
-        frames_start_idx: int = None,
-        frames_end_idx: int = None,
-    ) -> Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor, Optional[torch.Tensor]]]:
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Implementation of the forward pass through the DPT linear head.
-
-        This method processes a specific chunk of frames from the sequence.
 
         Args:
             aggregated_tokens_list (List[Tensor]): List of token tensors from different transformer layers.
             images (Tensor): Input images with shape [B, S, 3, H, W].
             patch_start_idx (int): Starting index for patch tokens.
-            frames_start_idx (int, optional): Starting index for frames to process.
-            frames_end_idx (int, optional): Ending index for frames to process.
 
         Returns:
-            Tensor or Tuple[Tensor, Tensor, Optional[Tensor]]: Feature maps or (predictions, confidence, mask).
+            Tuple of predicted depth and confidence tensors.
         """
-        if frames_start_idx is not None and frames_end_idx is not None:
-            images = images[:, frames_start_idx:frames_end_idx].contiguous()
-
         B, S, _, H, W = images.shape
 
         patch_h, patch_w = H // self.patch_size, W // self.patch_size
         last_layer_amp_context = (
-            torch.cuda.amp.autocast(enabled=False)
+            torch.autocast(device_type="cuda", enabled=False)
             if self.disable_last_layer_amp
             else contextlib.nullcontext()
         )
@@ -247,14 +190,8 @@ class DPTLinearHead(nn.Module):
 
             for layer_idx in self.intermediate_layer_idx:
                 x = aggregated_tokens_list[layer_idx][:, :, patch_start_idx:]
-                if self.half_dim_in:
-                    x = x[..., : x.shape[-1] // 2]
                 if self.disable_last_layer_amp and x.dtype != torch.float32:
                     x = x.float()
-
-                # Select frames if processing a chunk
-                if frames_start_idx is not None and frames_end_idx is not None:
-                    x = x[:, frames_start_idx:frames_end_idx]
 
                 x = x.reshape(B * S, -1, x.shape[-1])
 
@@ -276,56 +213,24 @@ class DPTLinearHead(nn.Module):
             if self.pos_embed:
                 out = self._apply_pos_embed(out, W, H)
 
-            if self.feature_only:
-                out = out.view(B, S, *out.shape[1:])
-                if self.disable_last_layer_amp:
-                    assert out.dtype == torch.float32, f"DPTLinearHead features must be fp32, got {out.dtype}"
-                return out
-
             feat = self.proj(out)
             feat = F.pixel_shuffle(feat, self.final_shuffle_factor)
 
-            if self.predict_mask:
-                feat_mask = self.proj_mask(out)
-                feat_mask = F.pixel_shuffle(feat_mask, self.final_shuffle_factor)
-            else:
-                feat_mask = None
-
-            if self.disable_conf:
-                feat = torch.cat([feat, torch.zeros_like(feat[:, :1])], dim=1)
-            else:
-                feat_conf = self.proj_conf(out)
-                feat_conf = F.pixel_shuffle(feat_conf, self.final_shuffle_factor)
-                feat = torch.cat([feat, feat_conf], dim=1)
+            feat_conf = self.proj_conf(out)
+            feat_conf = F.pixel_shuffle(feat_conf, self.final_shuffle_factor)
+            feat = torch.cat([feat, feat_conf], dim=1)
 
             preds, conf = activate_head(feat, activation=self.activation, conf_activation=self.conf_activation)
 
-            if self.disable_conf:
-                conf = torch.ones_like(conf)
-
-            if self.predict_mask:
-                if self.mask_activation == "sigmoid":
-                    mask = torch.sigmoid(feat_mask)
-                elif self.mask_activation == "none":
-                    mask = feat_mask
-                else:
-                    raise ValueError(f"Unknown mask activation: {self.mask_activation}")
-            else:
-                mask = None
-
             preds = preds.view(B, S, *preds.shape[1:])
             conf = conf.view(B, S, *conf.shape[1:])
-            if mask is not None:
-                mask = mask.view(B, S, *mask.shape[1:])
 
             if self.disable_last_layer_amp:
                 assert preds.dtype == torch.float32 and conf.dtype == torch.float32, (
                     f"DPTLinearHead outputs must be fp32, got preds={preds.dtype}, conf={conf.dtype}"
                 )
-                if mask is not None:
-                    assert mask.dtype == torch.float32, f"DPTLinearHead mask must be fp32, got {mask.dtype}"
 
-            return preds, conf, mask
+            return preds, conf
 
 
     def _apply_pos_embed(self, x: torch.Tensor, W: int, H: int, ratio: float = 0.1) -> torch.Tensor:
@@ -372,25 +277,6 @@ class DPTLinearHead(nn.Module):
 
         return out
 
-
-class CheckpointedDPTLinearHead(nn.Module):
-    """
-    Wrapper around DPTLinearHead that applies gradient checkpointing for memory efficiency.
-
-    Args:
-        use_checkpoint (bool): Whether to use gradient checkpointing. Default is True.
-        **kwargs: Arguments passed to DPTLinearHead.
-    """
-
-    def __init__(self, use_checkpoint: bool = True, **kwargs) -> None:
-        super().__init__()
-        self.use_checkpoint = use_checkpoint
-        self.head = DPTLinearHead(**kwargs)
-
-    def forward(self, *args, **kwargs):
-        if self.use_checkpoint and self.training:
-            return checkpoint(self.head, *args, use_reentrant=False, **kwargs)
-        return self.head(*args, **kwargs)
 
 ################################################################################
 # Modules
