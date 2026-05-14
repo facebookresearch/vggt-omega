@@ -466,8 +466,9 @@ New docs were added:
 
 Documentation choices:
 
-- The docs keep the release inference-only. They do not provide training,
-  fine-tuning, benchmark reproduction, or data annotation instructions.
+- Superseded by `README and Docs: Pass 2`: this first draft described the
+  release scope too explicitly. Public user docs should focus on the workflows
+  that are available rather than proactively listing workflows that are absent.
 - The checkpoint docs describe raw PyTorch `state_dict` loading and avoid
   `PyTorchModelHubMixin`.
 - The inference docs describe `camera_and_register_tokens` rather than a
@@ -506,8 +507,111 @@ provided. The release should document what users can run, without making
 unnecessary promises or refusals about workflows that are not part of the
 current README.
 
+This rule is now recorded in `CLAUDE.md`: public docs should read like a ready
+research release, avoid roadmap/scope wording such as "planned" or "initial
+release" in the README, and avoid proactively stating that absent workflows are
+not provided.
+
 The required legal footnote remains in the README:
 "This Release is intended to support the open source research community."
+
+## Gradio Demo: Pass 1
+
+Status: first VGGT-style Gradio demo added.
+
+The demo follows the public VGGT `demo_gradio.py` structure:
+
+- upload images or a video
+- preview extracted/input frames
+- run VGGT-Omega camera and depth inference
+- convert predicted cameras and depth into a point cloud
+- visualize the point cloud and cameras as a GLB in Gradio `Model3D`
+- adjust confidence threshold, camera visibility, and simple black/white
+  background filters
+
+Files added:
+
+- `demo_gradio.py`
+- `visual_util.py`
+- `requirements_demo.txt`
+
+Changes from public VGGT:
+
+- The demo uses `VGGTOmega` and explicit `torch.load` /
+  `model.load_state_dict` checkpoint loading.
+- The demo supports only the `VGGT-Omega-1B-512` reconstruction checkpoint.
+  The checkpoint choice is not exposed in the UI.
+- Point-map mode, track logic, sky segmentation, and bundled example videos
+  were not copied into the first VGGT-Omega demo.
+- GLB export uses depth unprojection from predicted depth, extrinsics, and
+  intrinsics.
+- `predictions.npz` is saved internally for re-rendering the GLB when
+  visualization controls change, but it is not exposed as a download widget.
+- The first UI pass removed `Show Points from Frame` to keep the demo focused.
+- `demo_outputs/` is ignored by git.
+
+Validation:
+
+- `python -m compileall -q demo_gradio.py visual_util.py`
+- AST parse check for both files
+- fake-prediction GLB export smoke test
+- import check for `demo_gradio.CHECKPOINT_URL`
+- `git diff --check -- demo_gradio.py visual_util.py README.md requirements_demo.txt .gitignore`
+
+## Gradio Demo: Pass 2
+
+Status: UI moved closer to public VGGT, with examples still omitted.
+
+The demo UI now copies the public VGGT interface more closely:
+
+- centered header with GitHub/project links
+- upload video/images panel and preview gallery
+- highlighted reconstruction status text
+- prediction mode radio
+- confidence threshold slider
+- camera visibility, sky, black-background, and white-background filters
+
+VGGT-Omega-specific constraints remain:
+
+- The UI still exposes no checkpoint selector.
+- The demo still defaults to the `VGGT-Omega-1B-512` reconstruction checkpoint.
+- Public VGGT examples were not copied.
+- `predictions.npz` remains an internal cache for visualization updates and is
+  not exposed as a download widget.
+
+Implementation notes:
+
+- `Filter Sky` uses the same ONNX sky mask flow as public VGGT and adds
+  `requests` / `onnxruntime` to the demo dependencies.
+- VGGT-Omega still produces the point cloud from depth unprojection. If the
+  public UI's pointmap option is selected, visualization falls back to the
+  available depth-based points.
+
+## Gradio Demo: Pass 3
+
+Status: `Show Points from Frame` removed from the UI.
+
+The demo now always visualizes all frames. The frame filter helper remains in
+`visual_util.py` because it is harmless and mirrors public VGGT's GLB utility,
+but the Gradio interface no longer exposes the dropdown or references it in the
+instructions.
+
+## Gradio Demo: Pass 4
+
+Status: DA3-inspired lightweight controls added.
+
+Two practical controls from the Depth Anything 3 demo were adapted without
+bringing over its larger app structure:
+
+- `Video Sampling FPS`, range `0.5` to `2.0`, default `1.0`. This controls
+  frame extraction for uploaded videos.
+- `Max Points (K points)`, range `500` to `10000`, default `1000`. This controls
+  the number of points exported to the GLB viewer and is included in the GLB
+  cache filename.
+
+The DA3 `Model3D` settings were reviewed but not changed in this pass. They are
+mainly viewer-stability settings (`clear_color`, persistent `key`, and
+`elem_id`) rather than model or export behavior.
 
 ## Open Cleanup Items
 

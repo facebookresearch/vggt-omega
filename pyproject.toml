@@ -24,6 +24,8 @@ demo = [
     "scipy",
     "trimesh",
     "matplotlib",
+    "requests",
+    "onnxruntime",
 ]
 export = [
     "pycolmap>=3.10.0",

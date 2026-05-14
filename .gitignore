@@ -9,6 +9,7 @@ venv/
 build/
 dist/
 outputs/
+demo_outputs/
 checkpoints/
 *.pt
 *.pth

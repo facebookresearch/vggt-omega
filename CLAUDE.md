@@ -193,6 +193,12 @@ simple, readable, and easy for researchers to modify.
 - Public README/docs should read like a ready research release, not like an
   internal scope document. Do not proactively say that training, evaluation, or
   fine-tuning are not provided; simply document the workflows we are releasing.
+- Avoid "planned", "will be", "initial release", "scope", and similar roadmap
+  language in the public README unless the section is explicitly a changelog or
+  roadmap. The README should present the current release as usable.
+- Public docs should not make unnecessary promises or refusals about workflows
+  that are absent. Internal docs such as `docs/release_progress.md` may track
+  scope and history, but user-facing docs should focus on what works.
 - Keep the README focused on installation, checkpoint loading, camera/depth
   inference, camera/register token outputs, text-alignment usage, visualization
   and export pointers, license, and citation. Put deeper details in docs.

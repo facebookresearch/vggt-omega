@@ -155,6 +155,24 @@ images = load_and_preprocess_images(image_paths, image_resolution=512)
 
 See [docs/preprocessing.md](docs/preprocessing.md) for the supported modes.
 
+## Interactive Demo
+
+Install the demo dependencies:
+
+```bash
+pip install -r requirements_demo.txt
+```
+
+Launch the Gradio demo:
+
+```bash
+python demo_gradio.py --checkpoint checkpoints/VGGT-Omega-1B-512/model.pt
+```
+
+The demo accepts uploaded images or a video, runs camera and depth inference,
+and visualizes the depth-unprojected point cloud and predicted cameras as a GLB
+scene.
+
 ## Runtime
 
 VGGT-Omega uses PyTorch scaled dot product attention by default. On modern CUDA
