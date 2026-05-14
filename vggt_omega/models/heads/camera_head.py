@@ -18,7 +18,6 @@ class CameraHead(nn.Module):
         super().__init__()
 
         self.token_norm = nn.LayerNorm(dim_in, eps=1e-5)
-        self.input_proj = nn.Identity()
         # Head-local transformer blocks that mix camera and register tokens across frames.
         self.trunk = nn.ModuleList(
             [
@@ -61,7 +60,6 @@ class CameraHead(nn.Module):
 
         camera_and_register_tokens = tokens[:, :, :patch_token_start]
         camera_and_register_tokens = self.token_norm(camera_and_register_tokens)
-        camera_and_register_tokens = self.input_proj(camera_and_register_tokens)
 
         camera_and_register_tokens = camera_and_register_tokens.reshape(batch_size, num_frames * patch_token_start, -1)
         rope_sincos = None

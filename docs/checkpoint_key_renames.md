@@ -55,8 +55,9 @@ Code names:
 - `alignment_head.student.extra_attention_blocks.` -> `alignment_head.student.trunk.`
 - `alignment_head.student.token_norm.` -> `alignment_head.student.trunk_norm.`
 
-The projection modules were renamed in code but do not affect the current
-release checkpoints because they are `nn.Identity()` and have no parameters:
+The projection modules did not affect release checkpoints because they were
+`nn.Identity()` and had no parameters. They have since been removed from the
+release code:
 
 - `camera_head.extra_attention_in_proj` -> `camera_head.input_proj`
 - `alignment_head.student.in_proj` -> `alignment_head.student.input_proj`

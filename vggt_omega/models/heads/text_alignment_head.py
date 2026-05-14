@@ -11,7 +11,6 @@ class TextAlignmentHead(nn.Module):
     def __init__(self, dim_in: int = 2048) -> None:
         super().__init__()
         self.token_norm = nn.LayerNorm(dim_in, eps=1e-5)
-        self.input_proj = nn.Identity()
 
         self.language_token = nn.Parameter(torch.zeros(1, 1, dim_in))
         nn.init.trunc_normal_(self.language_token, std=0.02)
@@ -57,7 +56,6 @@ class TextAlignmentHead(nn.Module):
         batch_size, num_frames, _, _ = tokens.shape
         camera_and_register_tokens = tokens[:, :, :patch_token_start]
         camera_and_register_tokens = self.token_norm(camera_and_register_tokens)
-        camera_and_register_tokens = self.input_proj(camera_and_register_tokens)
         camera_and_register_tokens = camera_and_register_tokens.reshape(batch_size, num_frames * patch_token_start, -1)
 
         language_token = self.language_token.expand(batch_size, -1, -1)
