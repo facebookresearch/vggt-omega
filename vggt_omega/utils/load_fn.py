@@ -12,100 +12,40 @@ from PIL import Image
 from torchvision import transforms as TF
 
 
-def load_and_preprocess_images_square(image_path_list, target_size=512):
-    """Load images, center-pad them to square, and resize to target_size."""
-    if len(image_path_list) == 0:
-        raise ValueError("At least 1 image is required")
-
-    images = []
-    original_coords = []
-    to_tensor = TF.ToTensor()
-
-    for image_path in image_path_list:
-        image = _load_rgb_image(image_path)
-        width, height = image.size
-
-        square_size = max(width, height)
-        left = (square_size - width) // 2
-        top = (square_size - height) // 2
-        scale = target_size / square_size
-
-        original_coords.append(
-            np.array(
-                [
-                    left * scale,
-                    top * scale,
-                    (left + width) * scale,
-                    (top + height) * scale,
-                    width,
-                    height,
-                ]
-            )
-        )
-
-        square_image = Image.new("RGB", (square_size, square_size), (0, 0, 0))
-        square_image.paste(image, (left, top))
-        square_image = square_image.resize((target_size, target_size), Image.Resampling.BICUBIC)
-        images.append(to_tensor(square_image))
-
-    return torch.stack(images), torch.from_numpy(np.array(original_coords)).float()
-
-
-def load_and_preprocess_images(image_path_list, mode="crop", target_size=512, patch_size=16):
+def load_and_preprocess_images(image_path_list, mode="balanced", image_resolution=512, patch_size=16):
     """Load images for VGGT-Omega inference.
 
-    `crop` resizes each image to target_size width and center-crops tall images.
-    `pad` preserves the full image by resizing the long side to target_size and
-    padding the short side.
+    `balanced` keeps the total token count close to image_resolution**2.
+    `max_size` resizes the longest side to image_resolution.
+    Both modes first center-crop extreme aspect ratios into [0.5, 2.0].
     """
     if len(image_path_list) == 0:
         raise ValueError("At least 1 image is required")
-    if mode not in ["crop", "pad"]:
-        raise ValueError("Mode must be either 'crop' or 'pad'")
-    if target_size <= 0:
-        raise ValueError("target_size must be positive")
+    if mode not in ["balanced", "max_size"]:
+        raise ValueError("Mode must be either 'balanced' or 'max_size'")
+    if image_resolution <= 0:
+        raise ValueError("image_resolution must be positive")
     if patch_size <= 0:
         raise ValueError("patch_size must be positive")
+    if image_resolution % patch_size != 0:
+        raise ValueError("image_resolution must be divisible by patch_size")
 
     images = []
     shapes = set()
     to_tensor = TF.ToTensor()
 
     for image_path in image_path_list:
-        image = _load_rgb_image(image_path)
+        image = _crop_to_supported_aspect_ratio(_load_rgb_image(image_path))
         width, height = image.size
+        aspect_ratio = height / max(width, 1)
 
-        if mode == "pad" and width < height:
-            new_height = target_size
-            new_width = round(width * (new_height / height) / patch_size) * patch_size
+        if mode == "balanced":
+            target_h, target_w = _balanced_target_shape(aspect_ratio, image_resolution, patch_size)
         else:
-            new_width = target_size
-            new_height = round(height * (new_width / width) / patch_size) * patch_size
+            target_h, target_w = _max_size_target_shape(aspect_ratio, image_resolution, patch_size)
 
-        new_width = max(new_width, patch_size)
-        new_height = max(new_height, patch_size)
-
-        image = image.resize((new_width, new_height), Image.Resampling.BICUBIC)
+        image = image.resize((target_w, target_h), Image.Resampling.BICUBIC)
         image = to_tensor(image)
-
-        if mode == "crop" and new_height > target_size:
-            start_y = (new_height - target_size) // 2
-            image = image[:, start_y : start_y + target_size, :]
-
-        if mode == "pad":
-            h_padding = target_size - image.shape[1]
-            w_padding = target_size - image.shape[2]
-            if h_padding > 0 or w_padding > 0:
-                pad_top = h_padding // 2
-                pad_bottom = h_padding - pad_top
-                pad_left = w_padding // 2
-                pad_right = w_padding - pad_left
-                image = torch.nn.functional.pad(
-                    image,
-                    (pad_left, pad_right, pad_top, pad_bottom),
-                    mode="constant",
-                    value=1.0,
-                )
 
         shapes.add((image.shape[1], image.shape[2]))
         images.append(image)
@@ -123,6 +63,46 @@ def _load_rgb_image(image_path):
             background = Image.new("RGBA", image.size, (255, 255, 255, 255))
             image = Image.alpha_composite(background, image)
         return image.convert("RGB")
+
+
+def _crop_to_supported_aspect_ratio(image, min_aspect_ratio=0.5, max_aspect_ratio=2.0):
+    width, height = image.size
+    aspect_ratio = height / max(width, 1)
+
+    if aspect_ratio < min_aspect_ratio:
+        crop_width = min(width, max(1, int(round(height / min_aspect_ratio))))
+        left = max((width - crop_width) // 2, 0)
+        return image.crop((left, 0, left + crop_width, height))
+
+    if aspect_ratio > max_aspect_ratio:
+        crop_height = min(height, max(1, int(round(width * max_aspect_ratio))))
+        top = max((height - crop_height) // 2, 0)
+        return image.crop((0, top, width, top + crop_height))
+
+    return image
+
+
+def _balanced_target_shape(aspect_ratio, image_resolution, patch_size):
+    token_number = (image_resolution // patch_size) ** 2
+    w_patches = np.sqrt(token_number / aspect_ratio)
+    h_patches = token_number / w_patches
+    w_patches = max(1, int(np.round(w_patches)))
+    h_patches = max(1, int(np.round(h_patches)))
+    return h_patches * patch_size, w_patches * patch_size
+
+
+def _max_size_target_shape(aspect_ratio, image_resolution, patch_size):
+    if aspect_ratio >= 1.0:
+        height = image_resolution
+        width = _round_to_patch_multiple(image_resolution / aspect_ratio, patch_size)
+    else:
+        width = image_resolution
+        height = _round_to_patch_multiple(image_resolution * aspect_ratio, patch_size)
+    return height, width
+
+
+def _round_to_patch_multiple(value, patch_size):
+    return max(patch_size, int(np.round(float(value) / patch_size)) * patch_size)
 
 
 def _pad_images_to_common_size(images, shapes):
