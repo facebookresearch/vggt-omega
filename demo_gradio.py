@@ -249,7 +249,7 @@ def update_visualization(
     if not os.path.exists(predictions_path):
         return None, "No reconstruction available. Click Reconstruct first."
 
-    conf_thres = max(3.0, float(conf_thres))
+    conf_thres = max(2.0, float(conf_thres))
 
     glbfile = glb_path(
         target_dir,
@@ -405,7 +405,7 @@ def build_ui(model: VGGTOmega, image_resolution: int):
                     conf_thres = gr.Slider(
                         minimum=2,
                         maximum=100,
-                        value=30,
+                        value=50,
                         step=0.1,
                         label="Confidence Threshold (%)",
                     )
