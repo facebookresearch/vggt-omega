@@ -1,5 +1,3 @@
-import contextlib
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -48,29 +46,27 @@ class SequenceAlignmentStudent(nn.Module):
         if patch_start_idx > tokens.shape[2]:
             raise ValueError(f"patch_start_idx ({patch_start_idx}) exceeds token length ({tokens.shape[2]})")
 
-        head_context = torch.autocast(device_type="cuda", enabled=False) if tokens.is_cuda else contextlib.nullcontext()
-        with head_context:
-            if tokens.dtype != torch.float32:
-                tokens = tokens.float()
+        if tokens.dtype != torch.float32:
+            tokens = tokens.float()
 
-            batch_size, num_frames, _, _ = tokens.shape
-            special_tokens = tokens[:, :, :patch_start_idx]
-            special_tokens = self.token_norm(special_tokens)
-            special_tokens = self.input_proj(special_tokens)
-            special_tokens = special_tokens.reshape(batch_size, num_frames * patch_start_idx, -1)
+        batch_size, num_frames, _, _ = tokens.shape
+        special_tokens = tokens[:, :, :patch_start_idx]
+        special_tokens = self.token_norm(special_tokens)
+        special_tokens = self.input_proj(special_tokens)
+        special_tokens = special_tokens.reshape(batch_size, num_frames * patch_start_idx, -1)
 
-            sequence_token = self.sequence_token.expand(batch_size, -1, -1)
-            joint_tokens = torch.cat([sequence_token, special_tokens], dim=1)
-            rope_sincos = None
-            for block in self.trunk:
-                joint_tokens = block(joint_tokens, rope_sincos)
+        sequence_token = self.sequence_token.expand(batch_size, -1, -1)
+        joint_tokens = torch.cat([sequence_token, special_tokens], dim=1)
+        rope_sincos = None
+        for block in self.trunk:
+            joint_tokens = block(joint_tokens, rope_sincos)
 
-            sequence_token = self.trunk_norm(joint_tokens[:, 0])
-            projected = self.projector(sequence_token)
-            return {
-                "alignment_student_embedding": F.normalize(projected, dim=-1),
-                "alignment_student_token": sequence_token,
-            }
+        sequence_token = self.trunk_norm(joint_tokens[:, 0])
+        projected = self.projector(sequence_token)
+        return {
+            "alignment_student_embedding": F.normalize(projected, dim=-1),
+            "alignment_student_token": sequence_token,
+        }
 
 
 class TextAlignmentHead(nn.Module):

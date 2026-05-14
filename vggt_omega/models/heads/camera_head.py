@@ -4,8 +4,6 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
-import contextlib
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -58,23 +56,21 @@ class CameraHead(nn.Module):
         if patch_start_idx > num_tokens:
             raise ValueError(f"patch_start_idx ({patch_start_idx}) exceeds token length ({num_tokens})")
 
-        head_context = torch.autocast(device_type="cuda", enabled=False) if tokens.is_cuda else contextlib.nullcontext()
-        with head_context:
-            if tokens.dtype != torch.float32:
-                tokens = tokens.float()
+        if tokens.dtype != torch.float32:
+            tokens = tokens.float()
 
-            special_tokens = tokens[:, :, :patch_start_idx]
-            special_tokens = self.token_norm(special_tokens)
-            special_tokens = self.input_proj(special_tokens)
+        special_tokens = tokens[:, :, :patch_start_idx]
+        special_tokens = self.token_norm(special_tokens)
+        special_tokens = self.input_proj(special_tokens)
 
-            special_tokens = special_tokens.reshape(batch_size, num_frames * patch_start_idx, -1)
-            rope_sincos = None
-            for block in self.trunk:
-                special_tokens = block(special_tokens, rope_sincos)
+        special_tokens = special_tokens.reshape(batch_size, num_frames * patch_start_idx, -1)
+        rope_sincos = None
+        for block in self.trunk:
+            special_tokens = block(special_tokens, rope_sincos)
 
-            special_tokens = special_tokens.reshape(batch_size, num_frames, patch_start_idx, -1)
-            pose_tokens = self.trunk_norm(special_tokens[:, :, 0])
-            return _apply_pose_activation(self.pose_branch(pose_tokens))
+        special_tokens = special_tokens.reshape(batch_size, num_frames, patch_start_idx, -1)
+        pose_tokens = self.trunk_norm(special_tokens[:, :, 0])
+        return _apply_pose_activation(self.pose_branch(pose_tokens))
 
 
 def _apply_pose_activation(pred_pose_enc: torch.Tensor) -> torch.Tensor:

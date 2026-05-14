@@ -6,7 +6,6 @@
 
 # Inspired by https://github.com/DepthAnything/Depth-Anything-V2
 
-import contextlib
 import math
 from typing import Tuple
 
@@ -82,43 +81,41 @@ class DenseHead(nn.Module):
         batch_size, num_frames, _, height, width = images.shape
         patch_h, patch_w = height // self.patch_size, width // self.patch_size
 
-        head_context = torch.autocast(device_type="cuda", enabled=False) if images.is_cuda else contextlib.nullcontext()
-        with head_context:
-            multi_scale_features = []
-            for feature_idx, layer_idx in enumerate(self.intermediate_layer_idx):
-                x = aggregated_tokens_list[layer_idx][:, :, patch_start_idx:]
-                if x.dtype != torch.float32:
-                    x = x.float()
+        multi_scale_features = []
+        for feature_idx, layer_idx in enumerate(self.intermediate_layer_idx):
+            x = aggregated_tokens_list[layer_idx][:, :, patch_start_idx:]
+            if x.dtype != torch.float32:
+                x = x.float()
 
-                x = x.reshape(batch_size * num_frames, -1, x.shape[-1])
-                x = self.norm(x)
-                x = x.permute(0, 2, 1).reshape((x.shape[0], x.shape[-1], patch_h, patch_w))
-                x = self.projects[feature_idx](x)
-                x = self._apply_pos_embed(x, width, height)
-                x = self.resize_layers[feature_idx](x)
-                multi_scale_features.append(x)
+            x = x.reshape(batch_size * num_frames, -1, x.shape[-1])
+            x = self.norm(x)
+            x = x.permute(0, 2, 1).reshape((x.shape[0], x.shape[-1], patch_h, patch_w))
+            x = self.projects[feature_idx](x)
+            x = self._apply_pos_embed(x, width, height)
+            x = self.resize_layers[feature_idx](x)
+            multi_scale_features.append(x)
 
-            fused = self.scratch_forward(multi_scale_features)
-            fused = self._apply_pos_embed(fused, width, height)
+        fused = self.scratch_forward(multi_scale_features)
+        fused = self._apply_pos_embed(fused, width, height)
 
-            raw_depth = self.proj(fused)
-            raw_depth = F.pixel_shuffle(raw_depth, self.final_shuffle_factor)
-            raw_depth = raw_depth.permute(0, 2, 3, 1)
+        raw_depth = self.proj(fused)
+        raw_depth = F.pixel_shuffle(raw_depth, self.final_shuffle_factor)
+        raw_depth = raw_depth.permute(0, 2, 3, 1)
 
-            raw_conf = self.proj_conf(fused)
-            raw_conf = F.pixel_shuffle(raw_conf, self.final_shuffle_factor)
-            raw_conf = raw_conf.permute(0, 2, 3, 1).squeeze(-1)
+        raw_conf = self.proj_conf(fused)
+        raw_conf = F.pixel_shuffle(raw_conf, self.final_shuffle_factor)
+        raw_conf = raw_conf.permute(0, 2, 3, 1).squeeze(-1)
 
-            depth = torch.exp(raw_depth)
-            depth_conf = 1.0 + torch.exp(raw_conf)
+        depth = torch.exp(raw_depth)
+        depth_conf = 1.0 + torch.exp(raw_conf)
 
-            depth = depth.view(batch_size, num_frames, *depth.shape[1:])
-            depth_conf = depth_conf.view(batch_size, num_frames, *depth_conf.shape[1:])
+        depth = depth.view(batch_size, num_frames, *depth.shape[1:])
+        depth_conf = depth_conf.view(batch_size, num_frames, *depth_conf.shape[1:])
 
-            if depth.dtype != torch.float32 or depth_conf.dtype != torch.float32:
-                raise TypeError(f"DenseHead outputs must be fp32, got depth={depth.dtype}, conf={depth_conf.dtype}")
+        if depth.dtype != torch.float32 or depth_conf.dtype != torch.float32:
+            raise TypeError(f"DenseHead outputs must be fp32, got depth={depth.dtype}, conf={depth_conf.dtype}")
 
-            return depth, depth_conf
+        return depth, depth_conf
 
     def _apply_pos_embed(self, x: torch.Tensor, width: int, height: int, ratio: float = 0.1) -> torch.Tensor:
         patch_w = x.shape[-1]

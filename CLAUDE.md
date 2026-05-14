@@ -111,6 +111,8 @@ simple, readable, and easy for researchers to modify.
   enabled with bfloat16 by default, while the heads are kept in fp32.
 - Keep this policy explicit in the model forward path rather than hiding it
   behind environment variables.
+- The release inference path assumes CUDA. Do not add per-call CPU fallback
+  wrappers such as `contextlib.nullcontext()` branches around autocast.
 
 ## Attention Backend Policy
 

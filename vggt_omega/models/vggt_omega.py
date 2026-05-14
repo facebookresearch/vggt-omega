@@ -1,4 +1,3 @@
-import contextlib
 import warnings
 from pathlib import Path
 from typing import Any
@@ -60,13 +59,6 @@ class VGGTOmega(nn.Module):
         model.load_state_dict(state_dict, strict=strict)
         return model
 
-    @staticmethod
-    def _amp_context(images: torch.Tensor):
-        if not images.is_cuda:
-            return contextlib.nullcontext()
-        dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
-        return torch.autocast(device_type="cuda", dtype=dtype)
-
     def forward(self, images: torch.Tensor | dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
         if isinstance(images, dict):
             images = images["images"]
@@ -78,12 +70,12 @@ class VGGTOmega(nn.Module):
         if images.shape[2] != 3:
             raise ValueError(f"Expected RGB images with 3 channels, got {images.shape[2]}")
 
-        with self._amp_context(images):
+        amp_dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
+        with torch.autocast(device_type="cuda", dtype=amp_dtype):
             aggregated_tokens_list, patch_start_idx = self.aggregator(images, self.patch_embed)
 
         predictions = {}
-        head_context = torch.autocast(device_type="cuda", enabled=False) if images.is_cuda else contextlib.nullcontext()
-        with head_context:
+        with torch.autocast(device_type="cuda", enabled=False):
             if self.camera_head is not None:
                 predictions["pose_enc"] = self.camera_head(
                     aggregated_tokens_list,
