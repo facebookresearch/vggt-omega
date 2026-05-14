@@ -341,35 +341,27 @@ def build_ui(args):
     ) as demo:
         gr.HTML(
             """
-        <h1>🏛️ VGGT-Omega</h1>
+        <h1>🌀 VGGT-Ω</h1>
         <p>
         <a href="https://github.com/facebookresearch/vggt-omega">🐙 GitHub Repository</a> |
         <a href="https://vggt-omega.github.io/">Project Page</a>
         </p>
 
         <div style="font-size: 16px; line-height: 1.5;">
-        <p>Upload a video or a set of images to create a 3D reconstruction of a scene or object. VGGT-Omega takes these images and generates a 3D point cloud, along with estimated camera poses.</p>
+        <p>Upload a video or a set of images to create a 3D reconstruction of a scene or object. VGGT-Ω takes these images and generates a 3D point cloud, along with estimated camera poses.</p>
 
         <h3>Getting Started:</h3>
         <ol>
             <li><strong>Upload Your Data:</strong> Use the "Upload Video" or "Upload Images" buttons on the left to provide your input. Videos will be automatically split into individual frames using the selected sampling rate.</li>
             <li><strong>Preview:</strong> Your uploaded images will appear in the gallery on the left.</li>
-            <li><strong>Reconstruct:</strong> Click the "Reconstruct" button to start the 3D reconstruction process.</li>
-            <li><strong>Visualize:</strong> The 3D reconstruction will appear in the viewer on the right. You can rotate, pan, and zoom to explore the model, and download the GLB file. Note the visualization of 3D points may be slow for a large number of input images.</li>
+            <li><strong>Reconstruct:</strong> Click the "Reconstruct" button to run camera and depth inference and build the first GLB scene.</li>
+            <li><strong>Visualize:</strong> The point cloud and camera poses will appear in the viewer on the right. You can rotate, pan, zoom, and download the GLB file.</li>
             <li>
             <strong>Adjust Visualization (Optional):</strong>
-            After reconstruction, you can fine-tune the visualization using the options below
-            <details style="display:inline;">
-                <summary style="display:inline;">(<strong>click to expand</strong>):</summary>
-                <ul>
-                <li><em>Confidence Threshold:</em> Adjust the filtering of points based on confidence.</li>
-                <li><em>Show Camera:</em> Toggle the display of estimated camera positions.</li>
-                <li><em>Filter Sky / Filter Black Background:</em> Remove sky or black-background points.</li>
-                </ul>
-            </details>
+            After reconstruction, adjust the visualization options and click "Update Visual" to refresh the GLB without rerunning inference.
             </li>
         </ol>
-        <p><strong style="color: #0ea5e9;">Please note:</strong> <span style="color: #0ea5e9; font-weight: bold;">VGGT-Omega reconstructs the scene with a single forward pass. Visualizing 3D points may take tens of seconds due to third-party rendering, which is independent of VGGT-Omega's processing time.</span></p>
+        <p><strong style="color: #0ea5e9;">Please note:</strong> <span style="color: #0ea5e9; font-weight: bold;">The demo limits Max Points by default to keep the UI responsive; increase Max Points if you need a denser point cloud. Visualizing very dense point clouds may take longer due to third-party rendering, which is independent of VGGT-Ω's processing time.</span></p>
         </div>
             """
         )
@@ -400,7 +392,7 @@ def build_ui(args):
 
             with gr.Column(scale=4):
                 with gr.Column():
-                    gr.Markdown("**3D Reconstruction (Point Cloud and Camera Poses)**")
+                    gr.Markdown("**Reconstruction (Point Cloud and Camera Poses)**")
                     log_output = gr.Markdown(
                         "Please upload a video or images, then click Reconstruct.",
                         elem_classes=["custom-log"],
@@ -414,8 +406,6 @@ def build_ui(args):
                         [input_video, input_images, reconstruction_output, log_output, target_dir_output, image_gallery],
                         scale=1,
                     )
-
-                gr.Markdown("### Visualization Options: click Update Visual to apply without rerunning inference.")
 
                 with gr.Row():
                     conf_thres = gr.Slider(
