@@ -174,7 +174,7 @@ def gradio_demo(
     if not target_dir or target_dir == "None" or not os.path.isdir(target_dir):
         raise gr.Error("Please upload images or a video first.")
 
-    conf_thres = max(2.0, float(conf_thres))
+    conf_thres = max(3.0, float(conf_thres))
 
     gc.collect()
     torch.cuda.empty_cache()
@@ -249,7 +249,7 @@ def update_visualization(
     if not os.path.exists(predictions_path):
         return None, "No reconstruction available. Click Reconstruct first."
 
-    conf_thres = max(2.0, float(conf_thres))
+    conf_thres = max(3.0, float(conf_thres))
 
     glbfile = glb_path(
         target_dir,
