@@ -9,7 +9,6 @@ import gc
 import glob
 import os
 import shutil
-import time
 from datetime import datetime
 
 import cv2
@@ -176,7 +175,6 @@ def gradio_demo(
 
     conf_thres = max(2.0, float(conf_thres))
 
-    start_time = time.time()
     gc.collect()
     torch.cuda.empty_cache()
 
@@ -215,10 +213,9 @@ def gradio_demo(
     gc.collect()
     torch.cuda.empty_cache()
 
-    elapsed = time.time() - start_time
     return (
         glbfile,
-        f"Reconstruction complete: {len(all_files)} frames, {elapsed:.1f}s.",
+        f"Reconstruction complete: {len(all_files)} frames.",
     )
 
 
