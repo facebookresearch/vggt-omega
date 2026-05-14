@@ -5,10 +5,10 @@
   <img src="https://img.shields.io/badge/Project_Page-green" alt="Project Page">
 </a>
 <a href="https://huggingface.co/facebook/VGGT-Omega-1B-512">
-  <img src="https://img.shields.io/badge/Checkpoint-1B--512-blue" alt="512 Checkpoint">
+  <img src="https://img.shields.io/badge/Access-1B--512-blue" alt="512 Checkpoint Access">
 </a>
 <a href="https://huggingface.co/facebook/VGGT-Omega-1B-256-Text-Alignment">
-  <img src="https://img.shields.io/badge/Checkpoint-1B--256--Text--Alignment-blue" alt="256 Text Alignment Checkpoint">
+  <img src="https://img.shields.io/badge/Access-1B--256--Text--Alignment-blue" alt="256 Text Alignment Checkpoint Access">
 </a>
 
 **[Visual Geometry Group, University of Oxford](https://www.robots.ox.ac.uk/~vgg/)**; **[Meta AI](https://ai.facebook.com/research/)**
@@ -39,13 +39,15 @@ downstream spatial understanding tasks.
 
 ## Model Zoo
 
-| Model | Resolution | Outputs | Checkpoint |
+| Model | Resolution | Outputs | Access |
 | --- | --- | --- | --- |
-| `VGGT-Omega-1B-512` | 512 | camera, depth, camera/register tokens | [model.pt](https://huggingface.co/facebook/VGGT-Omega-1B-512/resolve/main/model.pt) |
-| `VGGT-Omega-1B-256-Text-Alignment` | 256 | camera, depth, camera/register tokens, text alignment | [model.pt](https://huggingface.co/facebook/VGGT-Omega-1B-256-Text-Alignment/resolve/main/model.pt) |
+| `VGGT-Omega-1B-512` | 512 | camera, depth, camera/register tokens | [Request access](https://huggingface.co/facebook/VGGT-Omega-1B-512) |
+| `VGGT-Omega-1B-256-Text-Alignment` | 256 | camera, depth, camera/register tokens, text alignment | [Request access](https://huggingface.co/facebook/VGGT-Omega-1B-256-Text-Alignment) |
 
 The checkpoints are raw PyTorch `state_dict` files and load directly with
-`model.load_state_dict(torch.load(...))`.
+`model.load_state_dict(torch.load(...))`. Checkpoint access requires review;
+after approval, download the checkpoint yourself and pass its local path to the
+examples or demo.
 
 ## Installation
 

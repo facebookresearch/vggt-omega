@@ -7,11 +7,13 @@ VGGT-Omega releases two 1B checkpoints.
 | `VGGT-Omega-1B-512` | `VGGTOmega()` | `512` | camera, depth, camera/register tokens |
 | `VGGT-Omega-1B-256-Text-Alignment` | `VGGTOmega(enable_alignment=True)` | `256` | camera, depth, camera/register tokens, text alignment |
 
-Both checkpoint files are raw PyTorch `state_dict` files.
+Both checkpoint files are raw PyTorch `state_dict` files. Access requires
+review; request access from the checkpoint page, then download the approved
+file yourself and keep it on your local machine.
 
-## Download
+## Local Files
 
-The intended release layout is:
+The examples below assume this local layout:
 
 ```text
 checkpoints/
@@ -21,20 +23,14 @@ checkpoints/
     └── model.pt
 ```
 
-Download commands will use the final published checkpoint URLs:
+Create these folders and place the approved checkpoint files there:
 
 ```bash
 mkdir -p checkpoints/VGGT-Omega-1B-512
-wget -O checkpoints/VGGT-Omega-1B-512/model.pt \
-  https://huggingface.co/facebook/VGGT-Omega-1B-512/resolve/main/model.pt
-
 mkdir -p checkpoints/VGGT-Omega-1B-256-Text-Alignment
-wget -O checkpoints/VGGT-Omega-1B-256-Text-Alignment/model.pt \
-  https://huggingface.co/facebook/VGGT-Omega-1B-256-Text-Alignment/resolve/main/model.pt
 ```
 
-If the hosting location changes before public release, only the URLs above need
-to be updated.
+The code does not auto-download model weights.
 
 ## Loading
 

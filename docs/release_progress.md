@@ -494,7 +494,7 @@ closely:
 - centered title, badges, affiliations, and author list
 - citation near the top
 - concise overview
-- model zoo with checkpoint links
+- model zoo with access-controlled checkpoint pages
 - installation and quick start
 - output table
 - registers section
