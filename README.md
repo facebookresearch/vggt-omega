@@ -33,15 +33,13 @@
 
 ## Model Zoo
 
-| Model | Resolution | Outputs | Access |
-| --- | --- | --- | --- |
-| `VGGT-Omega-1B-512` | 512 | camera, depth, camera/register tokens | [Request access](https://huggingface.co/facebook/VGGT-Omega-1B-512) |
-| `VGGT-Omega-1B-256-Text-Alignment` | 256 | camera, depth, camera/register tokens, text alignment | [Request access](https://huggingface.co/facebook/VGGT-Omega-1B-256-Text-Alignment) |
+We provide two checkpoints:
 
-VGGT-&Omega; checkpoint access requires review. After approval, place the
-checkpoint file on your machine and pass the local path to the examples or
-demo. The checkpoints are raw PyTorch `state_dict` files and load directly with
-`model.load_state_dict(torch.load(...))`.
+| Checkpoint | Resolution | Text alignment | Access |
+| --- | --- | --- | --- |
+| `VGGT-Omega-1B-512` | 512 | No | [Request access](https://huggingface.co/facebook/VGGT-Omega-1B-512) |
+| `VGGT-Omega-1B-256-Text-Alignment` | 256 | Yes | [Request access](https://huggingface.co/facebook/VGGT-Omega-1B-256-Text-Alignment) |
+
 
 ## Quick Start
 
