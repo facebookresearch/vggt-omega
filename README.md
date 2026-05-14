@@ -55,7 +55,7 @@ from vggt_omega.utils.pose_enc import pose_encoding_to_extri_intri
 checkpoint_path = "path/to/vggt_omega_1b_512.pt"
 image_names = ["path/to/imageA.png", "path/to/imageB.png", "path/to/imageC.png"]
 
-model = VGGTOmega().to(device).eval()
+model = VGGTOmega().to("cuda").eval()
 model.load_state_dict(torch.load(checkpoint_path, map_location="cpu"))
 
 images = load_and_preprocess_images(image_names, image_resolution=512).to("cuda")
