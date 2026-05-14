@@ -6,9 +6,7 @@
 
 # Modified from PyTorch3D, https://github.com/facebookresearch/pytorch3d
 
-import logging
 import torch
-import numpy as np
 import torch.nn.functional as F
 
 
@@ -25,13 +23,7 @@ def quat_to_mat(quaternions: torch.Tensor) -> torch.Tensor:
         Rotation matrices as tensor of shape (..., 3, 3).
     """
     i, j, k, r = torch.unbind(quaternions, -1)
-    # pyre-fixme[58]: `/` is not supported for operand types `float` and `Tensor`.
-    norm_sq = (quaternions * quaternions).sum(-1)
-    if torch.any(norm_sq < 1e-6):
-        msg = f"Warning: a small quaternion norm is detected {norm_sq.min()}."
-        print(msg)
-        logging.warning(msg)
-    two_s = torch.where(norm_sq < 1e-6, 2.0, 2.0 / norm_sq)
+    two_s = 2.0 / (quaternions * quaternions).sum(-1)
 
     o = torch.stack(
         (
