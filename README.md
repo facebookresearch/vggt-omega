@@ -31,14 +31,12 @@
 }
 ```
 
-## Model Zoo
+## Pretrained models
 
-We provide two checkpoints:
-
-| Checkpoint | Resolution | Text alignment | Access |
+| Model | Resolution | Text alignment | Download |
 | --- | --- | --- | --- |
-| `VGGT-Omega-1B-512` | 512 | No | [Request access](https://huggingface.co/facebook/VGGT-Omega-1B-512) |
-| `VGGT-Omega-1B-256-Text-Alignment` | 256 | Yes | [Request access](https://huggingface.co/facebook/VGGT-Omega-1B-256-Text-Alignment) |
+| `VGGT-Omega-1B-512` | 512 | No | [Link](https://huggingface.co/facebook/VGGT-Omega-1B-512) |
+| `VGGT-Omega-1B-256-Text-Alignment` | 256 | Yes | [Link](https://huggingface.co/facebook/VGGT-Omega-1B-256-Text-Alignment) |
 
 
 ## Quick Start
