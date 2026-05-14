@@ -26,6 +26,54 @@ simple, readable, and easy for researchers to modify.
 - Match the existing VGGT release style where useful, but simplify it for the
   VGGT-Omega release scope.
 
+## Release Checkpoints
+
+- Plan for two public 1B checkpoints:
+  - a 512-resolution reconstruction checkpoint for camera and depth inference
+  - a 256-resolution checkpoint with language alignment
+- Keep checkpoint selection simple, for example with a small named preset or a
+  direct checkpoint path. Do not introduce a large registry or config system.
+- The 512-resolution checkpoint should be the default for reconstruction
+  examples unless a language-alignment example specifically needs the 256 model.
+- Released checkpoints must be self-contained for inference. Model construction
+  and checkpoint loading must not require downloading or separately caching
+  DINOv3 pretrained weights.
+
+## Import Hygiene
+
+- Be careful with package names. The copied dirty training code still uses the
+  `vggt.*` namespace, and some development environments may also have unrelated
+  or older `vggt` packages on `PYTHONPATH`.
+- Before debugging model behavior, verify the active package path with:
+  `python -c "import vggt; print(vggt.__file__)"`.
+- Tests and examples should run from this repository or otherwise make the
+  intended import path explicit. Do not assume `import vggt` points to the
+  local release package unless it has been checked.
+- Avoid adding more ambiguous top-level package names. Public user-facing APIs
+  should prefer the `vggt_omega` package when we add the cleaned release wrapper.
+
+## Precision Policy
+
+- Default inference should run the backbone and aggregator under AMP with
+  bfloat16 on CUDA when supported, falling back to float16 otherwise.
+- Heads should run in float32 by disabling autocast around camera/depth heads.
+  This matches the training setup for the z028 checkpoint: global AMP is enabled
+  with bfloat16 by default, while `enable_head_amp=False` and head-level
+  `disable_last_layer_amp=True` keep the heads in fp32.
+- Keep this policy explicit in the model forward path rather than hiding it
+  behind environment variables.
+
+## Attention Backend Policy
+
+- Default release code should work with PyTorch scaled dot product attention.
+  On modern PyTorch/CUDA this uses the Flash Attention v2 backend when
+  available, without requiring the user to install a separate flash-attn package.
+- Optional Flash Attention v3 support can be documented as an advanced H100 path;
+  on H100 it can be about 2x faster, but it must not be required for the default
+  installation or quick start.
+- If an optional Flash Attention v3 path is exposed, provide a simple fallback to
+  PyTorch SDPA because flash-attn builds are hardware- and environment-sensitive.
+
 ## Code Style
 
 - Keep files focused and reasonably short.

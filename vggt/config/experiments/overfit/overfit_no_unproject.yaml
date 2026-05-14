@@ -1,0 +1,15 @@
+# @package _global_
+# Inherits from overfit_base.yaml
+# Disables unproject_depth_to_points and point loss
+
+defaults:
+  - /experiments/overfit/overfit_base
+
+submitit:
+  name: "overfit_no_unproject"
+
+trainer:
+  loss:
+    unproject_depth_to_points: False
+    point: null
+

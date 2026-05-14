@@ -1,0 +1,11 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/cw/check_speed/base
+
+load_track: False
+
+trainer:
+  loss:
+    track: null

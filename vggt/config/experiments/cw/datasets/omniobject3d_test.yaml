@@ -1,0 +1,11 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: s3://dino/datasets/repligen/unified/omniobject3d/
+dataset_prefix: "_omniobject3d_test"
+step_range: 64
+jump_prob: 0.1
+max_depth: 32
+train_split_ratio: 0.95
+len_dataset: 100
+
+is_synt: false

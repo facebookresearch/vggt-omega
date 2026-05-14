@@ -1,0 +1,17 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/mast/ablation01_multiscale_deconv_concat
+  - _self_
+
+
+submitit:
+  name: "ab02"
+
+trainer:
+  model:
+    DEPTH_HEAD:
+      # Ablation 3: interpolate + depthwise conv upsample to 1/4.
+      multiscale_resize_type: "bilinear_dw"
+

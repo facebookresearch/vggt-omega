@@ -1,0 +1,13 @@
+# @package _global_
+
+defaults:
+  - /experiments/cw/linear/wlinear
+
+trainer:
+  loss:
+    depth:
+      mixture_weight_temperature_start: 2.0
+      mixture_weight_temperature_end: 0.5
+    preg:
+      mixture_weight_temperature_start: 2.0
+      mixture_weight_temperature_end: 0.5

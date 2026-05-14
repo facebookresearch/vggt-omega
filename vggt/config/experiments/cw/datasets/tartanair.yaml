@@ -1,0 +1,25 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+# UNIFIED_DIR: s3://dino/datasets/repligen/unified/tartanair/
+UNIFIED_DIR: s3://dino/datasets/repligen/dec/tartanair/
+dataset_prefix: "_tartanair"
+step_range: 32
+max_depth: 256
+enable_invalid_area_loss: True
+jump_prob: 0.05
+sample_by_index: True
+len_dataset: 175
+max_interval: 48
+sequence_list_file: /home/jianyuan/src/omega/projects/vggt/data/datasets/unified_txt/tartanair.txt
+
+len_dataset_scale: 1.5
+
+is_synt: True
+
+
+
+max_interval_ratio: 0.1
+
+
+
+

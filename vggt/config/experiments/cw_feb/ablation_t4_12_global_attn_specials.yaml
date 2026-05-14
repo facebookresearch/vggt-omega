@@ -1,0 +1,16 @@
+# @package _global_
+# Ablation t4-12: AGGREGATOR global_attn_mode: "specials" & global_attn_partial_ratio: 0.25
+
+defaults:
+  - /experiments/cw/t4
+
+submitit:
+  name: "t4_ab12"
+
+trainer:
+  model:
+    AGGREGATOR:
+      global_attn_mode: "specials"
+      global_attn_partial_ratio: 0.25
+
+

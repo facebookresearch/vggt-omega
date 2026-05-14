@@ -1,0 +1,399 @@
+# @package _global_
+
+defaults:
+  - /experiments/base/base_train
+  - /experiments/models/pi3@trainer.model
+  # - /experiments/cw/dataset_mix_v5
+  # - /experiments/base/base_fsdp
+  - /experiments/cw/datasets/overfit@trainer.data.train.dataset.dataset_configs.overfit
+  - /experiments/cw/datasets/overfit@trainer.data.val.dataset.dataset_configs.overfit
+
+
+#################
+# Global Variables
+#################
+
+use_spawn: True 
+debug: False
+img_size: 256
+patch_size: 14
+num_workers: 10
+load_track: False
+load_similarity: False
+track_num: 512
+shuffle: True
+seed_value: 10096
+
+base_lr: 5e-5
+min_lr: 1e-9
+patch_base_lr: 5e-6
+patch_min_lr: 1e-10
+restart_lr: 1e-5
+patch_restart_lr: 1e-6
+dyna_ratio: 2.0
+aggregator_register_num: 4
+
+
+#################
+# Submitit Configuration
+#################
+submitit:
+  name: "reproduce_pi3"
+  timeout_min: 8000
+  cpus_per_task: 12
+  account: "fair_amaia_cw_scale"
+  qos: "scale"
+  mem_gb: 0
+  use_cluster: True
+  partition: learn
+
+
+#################
+# Launcher Configuration
+#################
+launcher:
+  gpus_per_node: 8
+  num_nodes: 1
+
+
+#################
+# Trainer Configuration
+#################
+trainer:
+  model:
+    patch_embed: "dinov2_vitl14_reg"
+    # TO BE DONE
+    # Add point head
+    # AGGREGATOR:
+    #   disable_rope_global: False
+
+
+  cuda:
+    allow_tf32: False
+    cudnn_deterministic: False
+    cudnn_benchmark: False
+
+
+  accum_steps: 1
+  visual_viser: False
+  val_epoch_freq: 10
+  seed_value: ${seed_value}
+
+  max_epochs: 200
+  limit_train_batches: 1000
+  limit_val_batches: 100
+
+  optim:
+    optimizer:
+      _target_: torch.optim.AdamW
+      lr: ${base_lr}
+      weight_decay: 0.05
+
+    amp:
+      enabled: True
+
+    gradient_clip:
+      _target_: vggt.utils.gradient_clip.GradientClipper
+      configs:
+        - module_name: ["aggregator", "head", "patch_embed"]  # Or ["aggregator", "other_module"]
+          max_norm: 1.0
+          norm_type: 2
+
+    options:
+      lr:
+        # Main learning rate schedule:
+        # 0-5%: linear warmup, 5%-50%: cosine decay, 50%-52%: linear to restart_lr, 52%-100%: constant
+        - scheduler:
+            _target_: fvcore.common.param_scheduler.CompositeParamScheduler
+            schedulers:
+              - _target_: fvcore.common.param_scheduler.LinearParamScheduler
+                start_value: ${min_lr}
+                end_value: ${base_lr}
+              - _target_: fvcore.common.param_scheduler.CosineParamScheduler
+                start_value: ${base_lr}
+                end_value: ${min_lr}
+              - _target_: fvcore.common.param_scheduler.LinearParamScheduler
+                start_value: ${min_lr}
+                end_value: ${restart_lr}
+              - _target_: fvcore.common.param_scheduler.ConstantParamScheduler
+                value: ${restart_lr}
+            lengths: [0.05, 0.45, 0.02, 0.48]
+            interval_scaling: ['rescaled', 'rescaled', 'rescaled', 'rescaled']
+        # Patch embed learning rate schedule (0.1x of main)
+        - scheduler:
+            _target_: fvcore.common.param_scheduler.CompositeParamScheduler
+            schedulers:
+              - _target_: fvcore.common.param_scheduler.LinearParamScheduler
+                start_value: ${patch_min_lr}
+                end_value: ${patch_base_lr}
+              - _target_: fvcore.common.param_scheduler.CosineParamScheduler
+                start_value: ${patch_base_lr}
+                end_value: ${patch_min_lr}
+              - _target_: fvcore.common.param_scheduler.LinearParamScheduler
+                start_value: ${patch_min_lr}
+                end_value: ${patch_restart_lr}
+              - _target_: fvcore.common.param_scheduler.ConstantParamScheduler
+                value: ${patch_restart_lr}
+            lengths: [0.05, 0.45, 0.02, 0.48]
+            interval_scaling: ['rescaled', 'rescaled', 'rescaled', 'rescaled']
+          param_names:
+            - '*patch_embed*'
+      weight_decay:
+        - scheduler:
+            _target_: fvcore.common.param_scheduler.ConstantParamScheduler
+            value: 0.05
+
+
+#################
+# Loss Configuration
+#################
+  loss:
+    _target_: vggt.losses.loss.MultitaskLoss
+    # unproject_depth_to_points: True
+    # use_cam2world: False
+    normalize_predictions: True
+    verbose: False
+    intrinsics_warmup_ratio: 0.25
+    rel_to_first_cam: True
+    align_pred_to_gt: True           # Use Pi3's scale alignment
+    align_resolution: 4096           # Pi3's default ROE resolution
+    camera:
+      weight: 0.1                    # Pi3: 0.1 * camera_loss
+      weight_pairwise: 1.0           # Use pairwise pose loss
+      pairwise_rotation_loss_type: "chordal"     # Or angular
+      pairwise_translation_loss_type: "l1"       # Pi3 uses Huber δ=0.1
+      pairwise_weight_rotation: 1.0
+      pairwise_weight_translation: 1.0         # Pi3's alpha
+      loss_type: "l1_consistent" # The paper uses smooth l1 loss, but we found l1 loss is more stable than smooth l1 and l2 loss.
+      weight_trans: 1.0
+      weight_rot: 1.0
+      weight_focal: 1.0
+      pose_encoding_type: "absT_quaR_FoV"
+    # Adjusted weights from 1b_jan002_mask: depth 3x, point 2x, track 5x smaller
+    depth:
+      weight: 1.0
+      weight_normal: 1.0             # Pi3 adds normal loss with weight 1
+    point: null
+    track: null
+    mask: null
+    ray: null
+    match: null
+
+#################
+# Data Loading
+#################
+  data:
+    train:
+      _target_: vggt.data.dynamic_dataloader.DynamicTorchDataset
+      num_workers: ${num_workers}
+      use_spawn: ${use_spawn} # True
+      dyna_ratio: ${dyna_ratio}
+      sync_image_num: False
+      sync_node: False
+      persistent_workers: False
+      reuse_dataloader: False
+      seed: ${seed_value}
+      shuffle: ${shuffle}
+      pin_memory: True
+      common_config:
+        sample_dict: "s1"
+        ratio_dict: "s1"
+        img_size: ${img_size}
+        patch_size: ${patch_size}
+        debug: ${debug}
+        repeat_batch: False
+        img_nums: [1, 24]
+        aug_principal_point: True
+        random_rotation_ratio: -1
+        random_patch_mask_size: 128
+        random_patch_mask_ratio: -1
+        load_track: ${load_track}
+        track_num: ${track_num}
+        load_similarity: ${load_similarity}
+        load_ray_map: False
+        thread_io_worker_num: -1
+        rescale_prob: 0.8
+        augs:
+          aspects: [0.5, 2.0]
+          # 
+          cojitter_ratio: 0.6
+          jpeg_compression: 0.5
+          low_res_blur: 0.5
+          color_jitter:
+            brightness: 0.75
+            contrast: 0.75
+            saturation: 0.5
+            hue: 0.1
+            p: 0.9
+        compute_invalid_area: False
+        skip_extreme_rescale: True
+      dataset:
+        _target_: vggt.data.composed_dataset.ComposedDataset
+    val:
+      _target_: vggt.data.dynamic_dataloader.DynamicTorchDataset
+      num_workers: ${num_workers}
+      sync_image_num: False
+      use_spawn: ${use_spawn}
+      shuffle: ${shuffle}
+      pin_memory: True
+      seed: ${seed_value}
+      common_config:
+        sample_dict: "s1"
+        ratio_dict: "s1"
+        img_size: ${img_size}
+        patch_size: ${patch_size}
+        debug: ${debug}
+        load_track: ${load_track}
+        track_num: ${track_num}
+        load_similarity: ${load_similarity}
+        load_ray_map: False
+        thread_io_worker_num: -1
+        compute_invalid_area: False
+        skip_extreme_rescale: True
+      dataset:
+        _target_: vggt.data.composed_dataset.ComposedDataset
+
+
+
+
+
+
+  logging:
+    scalar_keys_to_log:
+      train:
+        keys_to_log:
+          # Overall loss
+          - loss_obj
+          # Depth head
+          - loss_depth
+          - loss_conf_depth
+          - loss_pts_l1
+          - loss_normal
+          - loss_reg_depth
+          - loss_grad_depth
+          - loss_reg_relative_depth
+          - d1
+          - d2
+          - d3
+          - abs_rel
+          - sq_rel
+          - rmse
+          - rmse_log
+          - loss_depth_max
+          - depth_conf_median
+          # Mask head (invalid area prediction)
+          - loss_mask
+          - mask_pos_ratio
+          # Point head
+          - loss_point
+          - loss_point_l1
+          - loss_point_normal
+          - loss_conf_point
+          - loss_reg_point
+          - loss_grad_point
+          - loss_reg_relative_point
+          - loss_point_max
+          # Point Reg head
+          - loss_preg
+          - loss_preg_l1
+          - loss_preg_normal
+          # Ray head
+          - loss_ray
+          # Camera head
+          - loss_camera
+          - pred_T_max
+          - loss_T
+          - loss_R
+          - loss_FL
+          - loss_PP
+          - loss_VP
+          - loss_PW
+          - Rac_5
+          - Tac_5
+          - Rac_15
+          - Tac_15
+          - Auc_30
+          - Auc_10
+          - Auc_5
+          - Auc_3
+          # Match head
+          - loss_patch_bce
+          - loss_patch_pos
+          - loss_patch_neg
+          - num_pos_pairs
+          - num_neg_pairs
+          # Consistency track loss
+          - loss_consistency
+          - loss_consistency_max
+          - consistency_valid_count
+          #
+          - mean_depth_raw
+      val:
+        keys_to_log:
+          # Overall loss
+          - loss_obj
+          # Depth head
+          - loss_depth
+          - loss_conf_depth
+          - loss_pts_l1
+          - loss_normal
+          - loss_reg_depth
+          - loss_grad_depth
+          - loss_reg_relative_depth
+          - d1
+          - d2
+          - d3
+          - abs_rel
+          - sq_rel
+          - rmse
+          - rmse_log
+          - loss_depth_max
+          - depth_conf_median
+          # Mask head (invalid area prediction)
+          - loss_mask
+          - mask_pos_ratio
+          # Point head
+          - loss_point
+          - loss_point_l1
+          - loss_point_normal
+          - loss_conf_point
+          - loss_reg_point
+          - loss_grad_point
+          - loss_reg_relative_point
+          - loss_point_max
+          # Point Reg head
+          - loss_preg
+          - loss_preg_l1
+          - loss_preg_normal
+          # Ray head
+          - loss_ray
+          # Camera head
+          - loss_camera
+          - pred_T_max
+          - loss_T
+          - loss_R
+          - loss_FL
+          - loss_PP
+          - loss_VP
+          - loss_PW
+          - Rac_5
+          - Tac_5
+          - Rac_15
+          - Tac_15
+          - Auc_30
+          - Auc_10
+          - Auc_5
+          - Auc_3
+          # Match head
+          - loss_patch_bce
+          - loss_patch_pos
+          - loss_patch_neg
+          - num_pos_pairs
+          - num_neg_pairs
+          # Consistency track loss
+          - loss_consistency
+          - loss_consistency_max
+          - consistency_valid_count
+          # 
+          - mean_depth_raw
+

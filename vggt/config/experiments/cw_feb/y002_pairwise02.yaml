@@ -1,0 +1,13 @@
+# @package _global_
+# Ablation: pairwise loss weight 0.2
+
+defaults:
+  - /experiments/cw/y002
+
+submitit:
+  name: "y002_pairwise02"
+
+trainer:
+  loss:
+    camera:
+      weight_pairwise: 0.2

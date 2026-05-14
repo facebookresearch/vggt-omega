@@ -1,0 +1,16 @@
+# @package _group_
+###
+### SYNTHETIC DATASET CONFIG
+### under cw/datasets_synt/
+###
+_target_: vggt.data.datasets.unified.UnifiedDataset
+dataset_prefix: "_taskonomy"
+is_synt: True
+len_dataset: 158
+len_dataset_scale: 1.0
+max_depth: 64
+sequence_list_file: /home/jianyuan/src/omega/projects/vggt/data/valid_seqs/taskonomy.txt
+step_range: 12
+# train_split_ratio: 0.95
+UNIFIED_DIR: s3://dino/datasets/repligen/unified/taskonomy/
+# sky_mask_path: "moge_mask"

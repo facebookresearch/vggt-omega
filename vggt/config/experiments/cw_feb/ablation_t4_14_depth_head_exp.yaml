@@ -1,0 +1,17 @@
+# @package _global_
+# Ablation t4-14: DEPTH_HEAD output_dim: 2, activation: "exp"
+# Test predicting depth directly (1 channel) instead of 3D local points (3 channels)
+
+defaults:
+  - /experiments/cw/t4
+
+submitit:
+  name: "t4_ab14"
+
+trainer:
+  model:
+    DEPTH_HEAD:
+      output_dim: 2
+      activation: "exp"
+
+

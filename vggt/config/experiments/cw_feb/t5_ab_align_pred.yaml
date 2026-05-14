@@ -1,0 +1,13 @@
+# @package _global_
+# Ablation: Enable align_pred_to_gt (True instead of False)
+
+defaults:
+  - /experiments/cw/t5
+
+submitit:
+  name: "t5_ab_align"
+
+trainer:
+  loss:
+    align_pred_to_gt: True
+

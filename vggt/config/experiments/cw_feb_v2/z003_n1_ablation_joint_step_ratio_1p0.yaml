@@ -1,0 +1,19 @@
+# @package _global_
+# Ablation: set train/val joint_step_ratio = 1.0
+
+defaults:
+  - /experiments/cw/z003_n1
+
+submitit:
+  name: "z003_n1_joint_step_ratio_1p0"
+
+trainer:
+  data:
+    train:
+      common_config:
+        joint_step_ratio: 1.0
+    val:
+      common_config:
+        joint_step_ratio: 1.0
+
+

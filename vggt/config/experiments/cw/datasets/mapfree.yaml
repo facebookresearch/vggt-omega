@@ -1,0 +1,21 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: s3://dino/datasets/repligen/unified/mapfree/
+dataset_prefix: "_mapfree"
+step_range: 128
+max_depth: 128
+len_dataset: 188
+
+len_dataset_scale: 0.25
+
+is_synt: false
+
+
+
+max_interval: 128
+max_interval_ratio: 0.2
+
+
+
+
+

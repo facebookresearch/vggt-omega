@@ -1,0 +1,17 @@
+# @package _global_
+# Ablation: depth/point abs_l1_loss_ratio = 0.1
+
+defaults:
+  - /experiments/cw/z002_n1
+
+submitit:
+  name: "z002_n1_absl1ratio_0p1"
+
+trainer:
+  loss:
+    depth:
+      abs_l1_loss_ratio: 0.1
+    point:
+      abs_l1_loss_ratio: 0.1
+
+

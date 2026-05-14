@@ -1,0 +1,14 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: /checkpoint/repligen/jianyuan/data/wai_re10k/
+dataset_prefix: "_wai_re10k"
+step_range: 128
+len_dataset: 643
+sample_by_index: True
+sequence_list_file: /mnt/coreai_3d/tree/jianyuan/valid_seqs/wai_re10k.txt
+
+disable_depth_loss: True
+exr_channel: "Z"
+len_dataset_scale: 0.025
+
+is_synt: false

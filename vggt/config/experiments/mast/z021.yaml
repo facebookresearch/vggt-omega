@@ -1,0 +1,20 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/mast/z019
+  - /experiments/mast/datasets_real/z1@trainer.data.train.dataset.dataset_configs.z1
+  - _self_
+
+
+submitit:
+  name: "z021"
+
+
+trainer:
+  data:
+    train:
+      dataset:
+        dataset_configs:
+          z1:
+            len_dataset_scale: 2.0

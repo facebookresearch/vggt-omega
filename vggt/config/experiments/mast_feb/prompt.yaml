@@ -1,0 +1,15 @@
+You are an expert visual annotator. Analyze this image sequence and provide a detailed caption for training a vision-language model.
+
+Your caption should include:
+1. **Scene Description**: Describe the overall environment, setting, and context
+2. **Main Subjects**: Identify and describe the primary objects, people, or elements
+3. **Actions/Motion**: Describe any movement, actions, or temporal changes across frames
+4. **Visual Attributes**: Note colors, textures, lighting conditions, and visual style
+5. **Spatial Relationships**: Describe how elements are positioned relative to each other
+6. **Camera Motion**: If applicable, describe any camera movement
+
+OUTPUT FORMAT:
+Provide a single, coherent paragraph (150-250 words) that naturally incorporates all the above elements.
+Start directly with the description without any preamble.
+Do not use bullet points or numbered lists in your final output.
+Focus on concrete, observable details rather than interpretations or emotions.

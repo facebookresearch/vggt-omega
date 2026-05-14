@@ -1,0 +1,35 @@
+# @package _global_
+#
+# Use the broader w003-style auxiliary geometry loss bundle on top of r001,
+# while keeping confidence off and point loss disabled.
+
+defaults:
+  - /experiments/cw/recheck/r001
+
+submitit:
+  name: "r004"
+
+trainer:
+  loss:
+    depth:
+      use_conf_loss: False
+      separate_reg_loss_weight: 2.0
+      valid_range: 0.99
+      gradient_loss_config:
+        - type: "normal_pi"
+          scales: 2
+          min_valid_samples: 10
+          weight: 0.1
+        - type: "grad"
+          scales: 4
+          weight: 1.0
+
+    preg:
+      use_conf_loss: False
+      separate_reg_loss_weight: 2.0
+      valid_range: 0.99
+      gradient_loss_config:
+        - type: "normal_pi"
+          scales: 3
+          min_valid_samples: 10
+          weight: 0.1

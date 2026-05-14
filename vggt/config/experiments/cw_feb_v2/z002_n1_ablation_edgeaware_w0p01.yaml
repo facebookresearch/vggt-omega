@@ -1,0 +1,26 @@
+# @package _global_
+# Ablation: edge_aware loss weight = 0.01
+
+defaults:
+  - /experiments/cw/z002_n1
+
+submitit:
+  name: "z002_n1_edgeaware_w0p01"
+
+trainer:
+  loss:
+    depth:
+      gradient_loss_config:
+        - type: "normal"
+          scales: 3
+          weight: 0.1
+        - type: "edge_aware"
+          scales: 1
+          weight: 0.01
+        - type: "grad"
+          scales: 5
+        - type: "lap"
+          scales: 3
+          weight: 0.5
+
+

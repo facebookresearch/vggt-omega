@@ -1,0 +1,13 @@
+# @package _group_
+###
+### SYNTHETIC DATASET CONFIG
+### under cw/datasets_synt/
+###
+_target_: vggt.data.datasets.unified.UnifiedDataset
+dataset_prefix: "_spring_test"
+is_synt: True
+len_dataset: 100
+max_depth: 128
+sample_by_index: True
+step_range: 64
+UNIFIED_DIR: s3://dino/datasets/repligen/unified/spring/

@@ -1,0 +1,22 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: /checkpoint/repligen/jianyuan/data/HO-Cap/
+dataset_prefix: "_ho_cap"
+step_range: 256
+max_depth: 1.5
+len_dataset: 87
+sample_by_index: True
+max_interval: 128
+max_interval_ratio: 0.1
+sequence_list_file: /mnt/coreai_3d/tree/jianyuan/valid_seqs_apr/HO-Cap.txt
+
+len_dataset_scale: 0.1
+
+edge_rtol_thres: 0.05
+
+is_synt: false
+
+
+# dynamic
+
+# Apr13 tower: max_percentile: 98

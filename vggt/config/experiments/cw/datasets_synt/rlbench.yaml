@@ -1,0 +1,27 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: s3://dino/datasets/repligen/mar/rlbench_v2/
+dataset_prefix: "_rlbench"
+step_range: 128
+max_interval: 32
+
+max_depth: 32
+# max_percentile: 95
+
+jump_prob: -1
+
+sample_by_index: True
+
+max_interval_ratio: 0.1
+
+len_dataset: 120
+
+len_dataset_scale: 1.0
+
+is_synt: True
+sequence_list_file: /home/jianyuan/src/omega/projects/vggt/data/valid_seqs/rlbench.txt
+
+intrinsics_filename: "intrinsics_pos.npy"
+
+
+# dynamic

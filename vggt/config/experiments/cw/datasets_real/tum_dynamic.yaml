@@ -1,0 +1,22 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: s3://dino/datasets/repligen/mar_v3/evaldata_unified/tum_dynamic/
+dataset_prefix: "_tum_dynamic"
+step_range: 64
+max_interval: 64
+
+max_depth: 16
+jump_prob: -1
+sample_by_index: True
+len_dataset: 10
+
+len_dataset_scale: 2.0
+
+edge_rtol_thres: 0.05
+
+
+max_interval_ratio: 0.1
+
+
+
+# dynamic

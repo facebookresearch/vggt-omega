@@ -1,0 +1,14 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/cw/ab003_base
+  - _self_
+
+
+trainer:
+  loss:
+    camera:
+      loss_type: "l1_consistent"
+
+

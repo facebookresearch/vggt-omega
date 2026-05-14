@@ -1,0 +1,13 @@
+# @package _global_
+# Ablation v2-07: filter_bias_and_bn: False
+
+defaults:
+  - /experiments/cw/reproduce_pi3_v2
+
+submitit:
+  name: "ab07"
+
+trainer:
+  optim:
+    filter_bias_and_bn: False
+

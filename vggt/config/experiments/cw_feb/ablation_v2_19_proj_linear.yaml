@@ -1,0 +1,14 @@
+# @package _global_
+# Ablation v2-19: DEPTH_HEAD proj_type: "linear"
+
+defaults:
+  - /experiments/cw/reproduce_pi3_v2
+
+submitit:
+  name: "ab19"
+
+trainer:
+  model:
+    DEPTH_HEAD:
+      proj_type: "linear"
+

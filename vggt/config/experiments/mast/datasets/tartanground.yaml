@@ -1,0 +1,24 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: /checkpoint/repligen/jianyuan/data/tartanground/
+dataset_prefix: "_tartanground"
+step_range: 128
+max_interval: 128
+
+max_depth: 64
+enable_invalid_area_loss: True
+jump_prob: -1
+sample_by_index: True
+len_dataset: 227
+
+sequence_list_file: /mnt/coreai_3d/tree/jianyuan/valid_seqs/tartanground.txt
+
+len_dataset_scale: 1.5
+
+is_synt: True
+
+
+
+
+
+max_interval_ratio: 0.1

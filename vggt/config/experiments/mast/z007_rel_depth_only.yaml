@@ -1,0 +1,17 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/mast/z007_rel_depth
+  - _self_
+
+
+submitit:
+  name: "z007_rel_depth_only"
+
+
+trainer:
+  loss:
+    depth:
+      abs_l1_loss_ratio: 0.0
+      rel_l1_loss_ratio: 1.0

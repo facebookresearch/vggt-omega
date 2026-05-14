@@ -1,0 +1,24 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/cw/ab_base
+  - _self_
+
+
+submitit:
+  name: "ab_no_conf_loss"
+
+
+trainer:
+  optim:
+    frozen_module_names:
+      - "*depth_head.proj_conf*"
+      - "*point_head.proj_conf*"
+  loss:
+    depth:
+      use_conf_loss: False
+    point:
+      use_conf_loss: False
+    preg:
+      use_conf_loss: False

@@ -1,0 +1,17 @@
+# @package _global_
+
+defaults:
+  - /experiments/cw/w008_linear
+
+submitit:
+  name: "w008_linear_256"
+
+img_size: 256
+dyna_ratio: 1.5
+
+launcher:
+  num_nodes: 16
+
+trainer:
+  max_epochs: 100
+  limit_train_batches: 1000

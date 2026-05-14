@@ -1,0 +1,14 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: s3://dino/datasets/repligen/unified/wai_dynamicreplica/
+dataset_prefix: "_wai_dynamicreplica"
+step_range: 128
+max_depth: 32
+len_dataset: 160
+
+len_dataset_scale: 1.0
+
+is_synt: True
+
+
+# dynamic

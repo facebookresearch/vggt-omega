@@ -1,0 +1,26 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: /checkpoint/repligen/jianyuan/data/rigid_v1/
+dataset_prefix: "_rigid_v1"
+step_range: 128
+max_depth: 256
+len_dataset: 749
+sample_by_index: True
+human_mask_path: "human"
+sky_mask_path: "moge_mask"
+# Apr13 tower: max_percentile: 99
+# Apr13 tower: min_percentile: 1
+sequence_list_file: /mnt/coreai_3d/tree/jianyuan/valid_seqs_apr/rigid_v2_uncertain.txt
+
+
+
+len_dataset_scale: 0.2
+
+# edge_rtol_thres: 0.05
+
+is_synt: false
+
+disable_depth_loss: True
+
+max_interval: 64
+max_interval_ratio: 0.2

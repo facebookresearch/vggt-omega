@@ -1,0 +1,25 @@
+# @package _global_
+# Ablation v2-02: 10% warmup + 90% cosine decay (like reproduce_pi3)
+
+defaults:
+  - /experiments/cw/reproduce_pi3_v2
+
+submitit:
+  name: "ab02"
+
+trainer:
+  optim:
+    options:
+      lr:
+        - scheduler:
+            _target_: fvcore.common.param_scheduler.CompositeParamScheduler
+            schedulers:
+              - _target_: fvcore.common.param_scheduler.LinearParamScheduler
+                start_value: ${min_lr}
+                end_value: ${base_lr}
+              - _target_: fvcore.common.param_scheduler.CosineParamScheduler
+                start_value: ${base_lr}
+                end_value: ${min_lr}
+            lengths: [0.1, 0.9]
+            interval_scaling: ['rescaled', 'rescaled']
+

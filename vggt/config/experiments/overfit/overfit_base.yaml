@@ -1,0 +1,303 @@
+# @package _global_
+# 
+
+defaults:
+  - /experiments/base/base_train
+  # - /experiments/base/base_fsdp
+  - /experiments/models/vggt_1b@trainer.model
+  # Dataset mix
+  - /experiments/cw/datasets/overfit@trainer.data.train.dataset.dataset_configs.overfit
+  - /experiments/cw/datasets/overfit@trainer.data.val.dataset.dataset_configs.overfit
+
+#################
+# Global Variables (from 1b_jan001_t3)
+#################
+use_spawn: True # set for debug. For training, set to True
+
+debug: False
+batch_size: 4 # 16    # TODO
+fix_img_num: 8 # 2
+img_size: 256
+patch_size: 16
+num_workers: 10
+load_track: True
+load_similarity: False
+track_num: 512
+shuffle: True
+seed_value: 40960
+max_img_per_gpu: 88
+
+base_lr: 5e-5 # tocheck
+min_lr: 1e-8 # tocheck
+patch_base_lr: 5e-6
+patch_min_lr: 1e-9
+restart_lr: 1e-5
+patch_restart_lr: 1e-6
+
+
+dyna_ratio: 4.0 # tocheck
+aggregator_register_num: 16 # tocheck
+
+
+#################
+# Submitit Configuration
+#################
+submitit:
+  name: "overfit_base"
+  timeout_min: 8000
+  cpus_per_task: 12
+  account: "fair_amaia_cw_scale"
+  qos: "scale"
+  # account: "fair_amaia_cw_explore"
+  # qos: "explore"
+  mem_gb: 0
+  use_cluster: True
+  partition: learn
+
+
+#################
+# Launcher Configuration
+#################
+launcher:
+  gpus_per_node: 8
+  num_nodes: 1
+
+
+#################
+# Trainer Configuration
+#################
+trainer:
+  model:
+    AGGREGATOR:
+      disable_rope_global: False # tocheck
+    DEPTH_HEAD:
+      conf_activation: softplus_0.5_5
+      disable_conf: True
+      separate_conf_head: False
+      # Enable mask prediction head (from 1b_jan002_mask)
+      # This adds a separate head that predicts invalid area masks
+      predict_mask: True
+      mask_activation: "sigmoid"
+    POINT_HEAD: # tocheck
+      _target_: vggt.models.heads.linear_head.LinearHead
+      dim_in: 2048
+      output_dim: 4
+      activation: "inv_log"
+      conf_activation: "expp1"
+      patch_size: ${patch_size}
+      proj_type: "mlp_self"
+      mlp_ratio: 0.5
+      # 
+      disable_conf: True
+      separate_conf_head: False
+
+    RAY_HEAD: null
+    MATCH_HEAD: null
+
+
+  cuda:
+    allow_tf32: False
+    cudnn_deterministic: False
+    cudnn_benchmark: False
+
+
+  accum_steps: 1
+  visual_viser: False
+  val_epoch_freq: 10
+  seed_value: ${seed_value}
+
+  max_epochs: 80
+  limit_train_batches: 1000
+  limit_val_batches: 20
+
+
+  distributed:
+    backend: nccl
+    find_unused_parameters: False
+
+
+  optim:
+    aggregator_layerwise_decay: 0.99
+
+    optimizer:
+      _target_: torch.optim.AdamW
+      lr: ${base_lr}
+      weight_decay: 0.05
+
+    amp:
+      enabled: True
+
+    gradient_clip:
+      _target_: vggt.utils.gradient_clip.GradientClipper
+      configs:
+        - module_name: ["patch_embed"]  # Or ["aggregator", "other_module"]
+          max_norm: 0.1
+          norm_type: 2
+        - module_name: ["aggregator", "head"]  # Or ["aggregator", "other_module"]
+          max_norm: 1.0
+          norm_type: 2
+
+    options:
+      lr:
+        # Main learning rate schedule:
+        # 0-5%: linear warmup, 5%-100%: cosine decay
+        - scheduler:
+            _target_: fvcore.common.param_scheduler.CompositeParamScheduler
+            schedulers:
+              - _target_: fvcore.common.param_scheduler.LinearParamScheduler
+                start_value: ${min_lr}
+                end_value: ${base_lr}
+              - _target_: fvcore.common.param_scheduler.CosineParamScheduler
+                start_value: ${base_lr}
+                end_value: ${min_lr}
+            lengths: [0.05, 0.95]
+            interval_scaling: ['rescaled', 'rescaled']
+        # Patch embed learning rate schedule (0.1x of main)
+        - scheduler:
+            _target_: fvcore.common.param_scheduler.CompositeParamScheduler
+            schedulers:
+              - _target_: fvcore.common.param_scheduler.LinearParamScheduler
+                start_value: ${patch_min_lr}
+                end_value: ${patch_base_lr}
+              - _target_: fvcore.common.param_scheduler.CosineParamScheduler
+                start_value: ${patch_base_lr}
+                end_value: ${patch_min_lr}
+            lengths: [0.05, 0.95]
+            interval_scaling: ['rescaled', 'rescaled']
+          param_names:
+            - '*patch_embed*'
+      weight_decay:
+        - scheduler:
+            _target_: fvcore.common.param_scheduler.ConstantParamScheduler
+            value: 0.05
+
+
+#################
+# Loss Configuration
+#################
+  loss:
+    _target_: vggt.losses.loss.MultitaskLoss
+    unproject_depth_to_points: True # tocheck
+    use_cam2world: False
+    normalize_predictions: False # tocheck
+    verbose: False
+    intrinsics_warmup_ratio: 0.25
+    rel_to_first_cam: True # tocheck
+    camera:
+      weight: 5.0 # tocheck
+      loss_type: "l1_consistent" # The paper uses smooth l1 loss, but we found l1 loss is more stable than smooth l1 and l2 loss.
+      weight_trans: 10.0
+      weight_rot: 1.0
+      weight_focal: 1.0
+      pose_encoding_type: "absT_quaR_FoV"
+    depth:
+      weight: 1.0  
+      gradient_loss_fn: "grad"
+      valid_range: 0.99
+      conf_reg_weight: 0.5
+      conf_rel_weight: 2.0
+      conf_loss_weight: 0.0
+      rel_loss_weight: 0.5
+      grad_loss_weight: 1.0
+      loss_type: "l1"
+    point:
+      weight: 1.0  
+      conf_loss_weight: 0.0
+      gradient_loss_fn: "normal"
+      grad_loss_weight: 1.0
+      rel_loss_weight: 0.5
+      valid_range: 0.99
+      loss_type: "l1"
+    preg:
+      weight: 1.0
+      conf_loss_weight: 0.0
+      gradient_loss_fn: "normal"
+      grad_loss_weight: 1.0
+      rel_loss_weight: 0.5
+      valid_range: 0.99      
+      loss_type: "l1"
+    track: 
+      weight: 10.0
+    mask:
+      weight: 0.5
+      loss_type: "bce"
+    ray: null
+    match: null
+
+#################
+# Data Loading
+#################
+  data:
+    train:
+      _target_: vggt.data.dynamic_dataloader.DynamicTorchDataset
+      num_workers: ${num_workers}
+      max_img_per_gpu: ${max_img_per_gpu}
+      use_spawn: ${use_spawn} # True
+      dyna_ratio: ${dyna_ratio}
+      sync_image_num: False
+      sync_node: False
+      persistent_workers: False
+      reuse_dataloader: False
+      seed: ${seed_value}
+      shuffle: ${shuffle}
+      pin_memory: True
+      common_config:
+        sample_dict: "s1"
+        ratio_dict: "s1"
+        img_size: ${img_size}
+        patch_size: ${patch_size}
+        debug: ${debug}
+        repeat_batch: False
+        img_nums: [1, 24] # check
+        aug_principal_point: True
+        random_rotation_ratio: 0.01 # check
+        random_patch_mask_size: 128
+        random_patch_mask_ratio: 0 # check
+        load_track: ${load_track}
+        track_num: ${track_num}
+        load_similarity: ${load_similarity}
+        load_ray_map: False
+        thread_io_worker_num: -1
+        rescale_prob: 0.8
+        augs:
+          aspects: [0.5, 2.0]
+          # 
+          cojitter_ratio: 0.6
+          jpeg_compression: True
+          color_jitter:
+            brightness: 0.8
+            contrast: 0.75
+            saturation: 0.5
+            hue: 0.1
+            p: 0.9
+        compute_invalid_area: True
+        skip_extreme_rescale: True # tocheck
+      dataset:
+        _target_: vggt.data.composed_dataset.ComposedDataset
+    val:
+      _target_: vggt.data.dynamic_dataloader.DynamicTorchDataset
+      num_workers: ${num_workers}
+      max_img_per_gpu: ${max_img_per_gpu}
+      sync_image_num: False
+      use_spawn: ${use_spawn}
+      shuffle: ${shuffle}
+      pin_memory: True
+      seed: ${seed_value}
+      common_config:
+        sample_dict: "s1"
+        ratio_dict: "s1"
+        img_size: ${img_size}
+        patch_size: ${patch_size}
+        debug: ${debug}
+        load_track: ${load_track}
+        track_num: ${track_num}
+        load_similarity: ${load_similarity}
+        load_ray_map: False
+        thread_io_worker_num: -1
+        compute_invalid_area: True
+        skip_extreme_rescale: True
+      dataset:
+        _target_: vggt.data.composed_dataset.ComposedDataset
+
+
+

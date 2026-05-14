@@ -1,0 +1,17 @@
+# @package _global_
+# Ablation t4-04: No extra attention layers in camera and depth head
+
+defaults:
+  - /experiments/cw/t4
+
+submitit:
+  name: "t4_ab04"
+
+trainer:
+  model:
+    CAMERA_HEAD:
+      extra_attention_depth: 0
+    DEPTH_HEAD:
+      extra_attention_depth: 0
+
+

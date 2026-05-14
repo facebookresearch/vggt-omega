@@ -1,0 +1,12 @@
+# @package _global_
+#
+# y002_flash: inherits y002 + enables flash attention in the aggregator
+
+defaults:
+  - /experiments/cw/y002
+
+trainer:
+  model:
+    AGGREGATOR:
+      use_flash_attn: True
+

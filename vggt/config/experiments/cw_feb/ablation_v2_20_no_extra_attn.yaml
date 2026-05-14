@@ -1,0 +1,14 @@
+# @package _global_
+# Ablation v2-20: DEPTH_HEAD extra_attention_depth: 0
+
+defaults:
+  - /experiments/cw/reproduce_pi3_v2
+
+submitit:
+  name: "ab20"
+
+trainer:
+  model:
+    DEPTH_HEAD:
+      extra_attention_depth: 0
+

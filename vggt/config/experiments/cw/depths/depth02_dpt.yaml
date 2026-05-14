@@ -1,0 +1,19 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/cw/depth01_gated_progressive
+  - _self_
+
+
+submitit:
+  name: "dpt_base"
+  account: "fair_amaia_cw_explore"
+  qos: "explore"
+
+
+trainer:
+  model:
+    DEPTH_HEAD:
+      fusion_mode: "dpt"
+

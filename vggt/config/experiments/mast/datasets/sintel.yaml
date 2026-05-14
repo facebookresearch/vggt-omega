@@ -1,0 +1,20 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: /checkpoint/repligen/jianyuan/data/evaldata_unified/sintel/
+dataset_prefix: "_sintel"
+step_range: 128
+max_interval: 64
+
+max_depth: 128
+jump_prob: -1
+sample_by_index: True
+len_dataset: 10
+
+len_dataset_scale: 1.0
+
+
+max_interval_ratio: 0.1
+
+
+
+# dynamic

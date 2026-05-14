@@ -1,0 +1,19 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/cw/understand/no_col_new_base
+  - _self_
+
+
+submitit:
+  name: "no_col_new_base_point_head_only"
+
+
+trainer:
+  model:
+    CAMERA_HEAD: null
+    DEPTH_HEAD: null
+  loss:
+    camera: null
+    depth: null

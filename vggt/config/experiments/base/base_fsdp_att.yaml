@@ -1,0 +1,39 @@
+# @package _global_
+
+#########################################################
+# FSDP2 settings for attention-block wrapping
+# RoPE dtype is controlled by model config (rope_dtype: fp32)
+#########################################################
+
+constants:
+  fsdp_wrap_module_cls:
+    - "vggt.models.layers.block.SelfAttentionBlock"
+  fsdp_wrap_module_tags:
+    - "frozen_tag"
+  fsdp_buffer_dtype: float32
+  fsdp_reduce_dtype: float32
+
+trainer:
+  strategy: fsdp
+  use_fsdp2: True
+  fsdp_settings:
+    _target_: omnivore.models.fsdp_model_utils.PyTorchFSDPSettings
+    shard_strategy: "FULL_SHARD"
+    param_dtype: bfloat16
+    reduce_dtype: ${constants.fsdp_reduce_dtype}
+    buffer_dtype: ${constants.fsdp_buffer_dtype}
+    # Wrap selected head layers in fp32 to match disable_last_layer_amp behavior.
+    # Uses fnmatch wildcards on module names.
+    fp32_module_name_patterns:
+      - "*_head*"
+      # - "*_head.pose_branch*"
+      # - "*_head.token_norm*"
+      # - "*_head.norm*"
+      # - "*_head.proj"
+      # - "*_head.proj_conf"
+      # - "*_head.proj_mask"
+      # - "*_head.projects.*"
+    auto_wrap_policy:
+      _target_: omnivore.models.fsdp_model_utils.AutoWrapPolicy
+      module_cls_names: ${constants.fsdp_wrap_module_cls}
+      module_tags: ${constants.fsdp_wrap_module_tags}

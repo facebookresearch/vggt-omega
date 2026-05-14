@@ -1,0 +1,13 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: /checkpoint/repligen/jianyuan/data/overfit/
+dataset_prefix: "_overfit_hospital"
+step_range: 50
+max_depth: 256
+enable_invalid_area_loss: True
+len_dataset: 100000
+max_interval: 64
+
+len_dataset_scale: 1.0
+
+is_synt: false

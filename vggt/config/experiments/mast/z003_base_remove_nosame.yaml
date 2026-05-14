@@ -1,0 +1,17 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/mast/z003_base
+  - _self_
+
+
+submitit:
+  name: "z003_base_remove_nosame"
+
+
+trainer:
+  data:
+    train:
+      common_config:
+        same_preprocess_ratio: 0.02

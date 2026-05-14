@@ -1,0 +1,30 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/mast/ablation17_multiscale_bilinear_dw_256_add_rope2d_perlevelnorm_dwpostconv
+  - _self_
+
+
+submitit:
+  name: "ab18"
+
+trainer:
+  model:
+    # Request patch-embed intermediate from the 11th block (0-based index 10).
+    patch_embed_out_indices: [11]
+    DEPTH_HEAD:
+      # Prioritize quality over memory:
+      # 1) richer multiscale capacity with concat fusion,
+      # 2) stronger spatial mixing in head and post head,
+      # 3) fuse early patch-embed features with concat.
+      multiscale_out_channels: [256, 512, 512, 512]
+      multiscale_merge_type: "concat"
+      multiscale_resize_type: "bilinear_normal_conv"
+      multiscale_head_conv_type: "conv"
+      post_conv_type: "conv"
+      use_patch_embed_intermediate: True
+      patch_embed_dim: 1024
+      patch_embed_out_channels: 512
+      patch_embed_merge_type: "concat"
+

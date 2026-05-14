@@ -1,0 +1,19 @@
+# @package _global_
+# Ablation: use GT variance weighting with inverse std (1/std)
+
+defaults:
+  - /experiments/cw/z002_n1
+
+submitit:
+  name: "z002_n1_varweight_inverse"
+
+trainer:
+  loss:
+    depth:
+      use_gt_var_weighting: True
+      gt_var_weight_use_inverse_std: True
+    point:
+      use_gt_var_weighting: True
+      gt_var_weight_use_inverse_std: True
+
+

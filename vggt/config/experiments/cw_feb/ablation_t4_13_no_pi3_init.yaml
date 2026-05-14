@@ -1,0 +1,15 @@
+# @package _global_
+# Ablation t4-13: Disable Pi3-style initialization (init_mode: null instead of "pi3")
+
+defaults:
+  - /experiments/cw/t4
+
+submitit:
+  name: "t4_ab13"
+
+trainer:
+  model:
+    AGGREGATOR:
+      init_mode: "vit"
+
+

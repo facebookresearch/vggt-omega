@@ -1,0 +1,12 @@
+# @package _group_
+_target_: vggt.data.datasets.unified_covis.UnifiedCovisDataset
+UNIFIED_DIR: /checkpoint/repligen/jianyuan/data/megadepth/
+dataset_prefix: "_megadepth"
+max_depth: 256
+len_dataset: 122
+sequence_list_file: /mnt/coreai_3d/tree/jianyuan/valid_seqs/megadepth.txt
+mask_path: "depth_masks"
+
+len_dataset_scale: 0.8
+
+is_synt: false

@@ -1,0 +1,23 @@
+# @package _global_
+# Ablation: exclude patch_embed during checkpoint loading
+
+defaults:
+  - /experiments/cw/y002t
+
+submitit:
+  name: "y002t_nopatemb"
+
+trainer:
+  checkpoint:
+    model_weight_initializer:
+      state_dict:
+        checkpoints:
+          - checkpoint_path: /checkpoint/amaia/explore/jianyuan/vggt/config/experiments/cw/Full_1b_d015_5e5_t2.yaml/0/checkpoints/checkpoint_ab_e98.pt
+            ckpt_state_dict_keys:
+            - model
+            checkpoint_kernels:
+              - _target_: omnivision.model.checkpoint_utils.CkptExcludeKernel
+                key_pattern:
+                  - "*head*"
+                  - "*patch_embed*"
+

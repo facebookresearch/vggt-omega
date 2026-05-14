@@ -1,0 +1,11 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: s3://dino/datasets/repligen/unified/blendmvs_v2/
+dataset_prefix: "_blendmvs_test"
+step_range: 64
+jump_prob: 0.1
+train_split_ratio: 0.95
+len_dataset: 100
+
+is_synt: false
+is_g: True

@@ -1,0 +1,16 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/mast/ablation09_multiscale_bilinear_256_add
+  - _self_
+
+
+submitit:
+  name: "ab11"
+
+trainer:
+  model:
+    DEPTH_HEAD:
+      # Add RoPE-style positional embedding to stabilize spatial structure.
+      pos_embed_type: "rope2d"

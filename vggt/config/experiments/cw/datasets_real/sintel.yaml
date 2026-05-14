@@ -1,0 +1,21 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: s3://dino/datasets/repligen/mar_v3/evaldata_unified/sintel/
+dataset_prefix: "_sintel"
+step_range: 128
+max_interval: 64
+
+max_depth: 128
+jump_prob: -1
+sample_by_index: True
+sky_mask_path: "moge_mask"
+len_dataset: 10
+
+len_dataset_scale: 1.8
+
+
+max_interval_ratio: 0.1
+
+
+
+# dynamic

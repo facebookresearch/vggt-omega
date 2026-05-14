@@ -1,0 +1,14 @@
+student:
+  arch: vit_large
+  patch_size: 16
+  num_register_tokens: 0
+  interpolate_antialias: false
+  interpolate_offset: 0.1
+  drop_path_rate: 0.1
+  in_chans: 4
+  block_chunks: 4
+teacher:
+  in_chans: 4  
+crops:
+  global_crops_size: 224
+  local_crops_size: 96

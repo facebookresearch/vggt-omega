@@ -1,0 +1,16 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: /checkpoint/repligen/jianyuan/data/rigid_v1/
+dataset_prefix: "_rigid_v1_top50"
+step_range: 128
+max_depth: 256
+len_dataset: 749
+sample_by_index: True
+human_mask_path: "human"
+sky_mask_path: "moge_mask"
+sequence_list_file: /mnt/coreai_3d/tree/jianyuan/valid_seqs_apr/rigid_v1_clean_v2_top50.txt
+len_dataset_scale: 0.5
+edge_rtol_thres: 0.05
+is_synt: false
+max_interval: 64
+max_interval_ratio: 0.2

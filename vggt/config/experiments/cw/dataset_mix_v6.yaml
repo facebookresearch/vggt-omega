@@ -1,0 +1,110 @@
+# @package _global_
+defaults:
+  #
+  # NOTE THIS IS A DEBUG CONFIG TO TEST OVERFITTING UPPER BOUND WITH VAL INSIDE TRAINING
+  # FOR REAL TRAINING, USE _train.yaml
+  #
+  - /experiments/cw/datasets/aerial_megadepth@trainer.data.train.dataset.dataset_configs.aerial_megadepth
+  - /experiments/cw/datasets/apollo@trainer.data.train.dataset.dataset_configs.apollo
+  - /experiments/cw/datasets/arkit@trainer.data.train.dataset.dataset_configs.arkit
+  - /experiments/cw/datasets/atom@trainer.data.train.dataset.dataset_configs.atom
+  - /experiments/cw/datasets/bedlam@trainer.data.train.dataset.dataset_configs.bedlam
+  - /experiments/cw/datasets/blendmvs@trainer.data.train.dataset.dataset_configs.blendmvs
+  - /experiments/cw/datasets/bus@trainer.data.train.dataset.dataset_configs.bus
+  - /experiments/cw/datasets/bus3@trainer.data.train.dataset.dataset_configs.bus3
+  - /experiments/cw/datasets/col@trainer.data.train.dataset.dataset_configs.col
+  - /experiments/cw/datasets/cool@trainer.data.train.dataset.dataset_configs.cool
+  - /experiments/cw/datasets/crys@trainer.data.train.dataset.dataset_configs.crys
+  - /experiments/cw/datasets/dioptra@trainer.data.train.dataset.dataset_configs.dioptra
+  - /experiments/cw/datasets/dl3dv@trainer.data.train.dataset.dataset_configs.dl3dv
+  - /experiments/cw/datasets/dyna_v1@trainer.data.train.dataset.dataset_configs.dyna_v1
+  - /experiments/cw/datasets/eden@trainer.data.train.dataset.dataset_configs.eden
+  - /experiments/cw/datasets/gen2pilot@trainer.data.train.dataset.dataset_configs.gen2pilot
+  - /experiments/cw/datasets/ho_cap@trainer.data.train.dataset.dataset_configs.ho_cap
+  - /experiments/cw/datasets/hor@trainer.data.train.dataset.dataset_configs.hor
+  - /experiments/cw/datasets/hypersim@trainer.data.train.dataset.dataset_configs.hypersim
+  - /experiments/cw/datasets/interiornet@trainer.data.train.dataset.dataset_configs.interiornet
+  - /experiments/cw/datasets/map_metro@trainer.data.train.dataset.dataset_configs.map_metro
+  - /experiments/cw/datasets/mapfree@trainer.data.train.dataset.dataset_configs.mapfree
+  - /experiments/cw/datasets/megadepth@trainer.data.train.dataset.dataset_configs.megadepth
+  - /experiments/cw/datasets/megasynth@trainer.data.train.dataset.dataset_configs.megasynth
+  - /experiments/cw/datasets/midair@trainer.data.train.dataset.dataset_configs.midair
+  - /experiments/cw/datasets/mvs@trainer.data.train.dataset.dataset_configs.mvs
+  - /experiments/cw/datasets/mvssync@trainer.data.train.dataset.dataset_configs.mvssync
+  - /experiments/cw/datasets/nebula@trainer.data.train.dataset.dataset_configs.nebula
+  - /experiments/cw/datasets/omniobject3d@trainer.data.train.dataset.dataset_configs.omniobject3d
+  - /experiments/cw/datasets/omniworld@trainer.data.train.dataset.dataset_configs.omniworld
+  - /experiments/cw/datasets/paralleldomain@trainer.data.train.dataset.dataset_configs.paralleldomain
+  - /experiments/cw/datasets/rigid_v1@trainer.data.train.dataset.dataset_configs.rigid_v1
+  - /experiments/cw/datasets/scannet@trainer.data.train.dataset.dataset_configs.scannet
+  - /experiments/cw/datasets/scannet_extra@trainer.data.train.dataset.dataset_configs.scannet_extra
+  - /experiments/cw/datasets/scannetpp@trainer.data.train.dataset.dataset_configs.scannetpp
+  - /experiments/cw/datasets/se@trainer.data.train.dataset.dataset_configs.se
+  - /experiments/cw/datasets/smart@trainer.data.train.dataset.dataset_configs.smart
+  - /experiments/cw/datasets/sstk_593k_v1@trainer.data.train.dataset.dataset_configs.sstk_593k_v1
+  - /experiments/cw/datasets/sstk_593k_v2@trainer.data.train.dataset.dataset_configs.sstk_593k_v2
+  - /experiments/cw/datasets/staticthings3d@trainer.data.train.dataset.dataset_configs.staticthings3d
+  - /experiments/cw/datasets/stereo4d@trainer.data.train.dataset.dataset_configs.stereo4d
+  - /experiments/cw/datasets/syndrone@trainer.data.train.dataset.dataset_configs.syndrone
+  - /experiments/cw/datasets/tartanair@trainer.data.train.dataset.dataset_configs.tartanair
+  - /experiments/cw/datasets/tartanground@trainer.data.train.dataset.dataset_configs.tartanground
+  - /experiments/cw/datasets/taskonomy@trainer.data.train.dataset.dataset_configs.taskonomy
+  - /experiments/cw/datasets/toy13@trainer.data.train.dataset.dataset_configs.toy13
+  - /experiments/cw/datasets/tr1@trainer.data.train.dataset.dataset_configs.tr1
+  - /experiments/cw/datasets/tr2@trainer.data.train.dataset.dataset_configs.tr2
+  - /experiments/cw/datasets/tr3@trainer.data.train.dataset.dataset_configs.tr3
+  - /experiments/cw/datasets/tex_v2@trainer.data.train.dataset.dataset_configs.tex_v2
+  - /experiments/cw/datasets/uavscenes@trainer.data.train.dataset.dataset_configs.uavscenes
+  - /experiments/cw/datasets/uco3d@trainer.data.train.dataset.dataset_configs.uco3d
+  - /experiments/cw/datasets/ue@trainer.data.train.dataset.dataset_configs.ue
+  - /experiments/cw/datasets/ue1@trainer.data.train.dataset.dataset_configs.ue1
+  - /experiments/cw/datasets/uedec@trainer.data.train.dataset.dataset_configs.uedec
+  - /experiments/cw/datasets/unreal4k@trainer.data.train.dataset.dataset_configs.unreal4k
+  - /experiments/cw/datasets/uyn@trainer.data.train.dataset.dataset_configs.uyn
+  - /experiments/cw/datasets/vkitti@trainer.data.train.dataset.dataset_configs.vkitti
+  - /experiments/cw/datasets/wai_ase@trainer.data.train.dataset.dataset_configs.wai_ase
+  - /experiments/cw/datasets/wai_dynamicreplica@trainer.data.train.dataset.dataset_configs.wai_dynamicreplica
+  - /experiments/cw/datasets/wai_gta_sfm@trainer.data.train.dataset.dataset_configs.wai_gta_sfm
+  - /experiments/cw/datasets/wai_matrixcity_large@trainer.data.train.dataset.dataset_configs.wai_matrixcity_large
+  - /experiments/cw/datasets/wai_mpsd@trainer.data.train.dataset.dataset_configs.wai_mpsd
+  - /experiments/cw/datasets/wai_re10k@trainer.data.train.dataset.dataset_configs.wai_re10k
+  - /experiments/cw/datasets/wai_sailvos3d@trainer.data.train.dataset.dataset_configs.wai_sailvos3d
+  - /experiments/cw/datasets/wai_structured3d@trainer.data.train.dataset.dataset_configs.wai_structured3d
+  - /experiments/cw/datasets/wai_tartanairv2_large@trainer.data.train.dataset.dataset_configs.wai_tartanairv2_large
+  - /experiments/cw/datasets/wildrgbd@trainer.data.train.dataset.dataset_configs.wildrgbd
+  # New shier_v1 datasets
+  - /experiments/cw/datasets/hor02@trainer.data.train.dataset.dataset_configs.hor02
+  - /experiments/cw/datasets/gta27@trainer.data.train.dataset.dataset_configs.gta27
+  - /experiments/cw/datasets/hor28@trainer.data.train.dataset.dataset_configs.hor28
+  - /experiments/cw/datasets/saibo28@trainer.data.train.dataset.dataset_configs.saibo28
+  - /experiments/cw/datasets/crys48@trainer.data.train.dataset.dataset_configs.crys48
+  - /experiments/cw/datasets/collected_saibo@trainer.data.train.dataset.dataset_configs.collected_saibo
+  # New r2 datasets
+  - /experiments/cw/datasets/r2_b1@trainer.data.train.dataset.dataset_configs.r2_b1
+  - /experiments/cw/datasets/r2_behavior1k@trainer.data.train.dataset.dataset_configs.r2_behavior1k
+  - /experiments/cw/datasets/r2_crys@trainer.data.train.dataset.dataset_configs.r2_crys
+  - /experiments/cw/datasets/r2_gta@trainer.data.train.dataset.dataset_configs.r2_gta
+  - /experiments/cw/datasets/r2_mv@trainer.data.train.dataset.dataset_configs.r2_mv
+  - /experiments/cw/datasets/r2_saibo@trainer.data.train.dataset.dataset_configs.r2_saibo
+  - /experiments/cw/datasets/se_col@trainer.data.train.dataset.dataset_configs.se_col
+  #
+  ########################################################## Include Some VAL DATASETS TO CHECK THE OVERFITTING PERFORMANCE ##########################################################
+  - /experiments/cw/datasets/tum_dynamic@trainer.data.train.dataset.dataset_configs.tum_dynamic
+  - /experiments/cw/datasets/nrgbd@trainer.data.train.dataset.dataset_configs.nrgbd
+  - /experiments/cw/datasets/dycheck@trainer.data.train.dataset.dataset_configs.dycheck
+  - /experiments/cw/datasets/spring@trainer.data.train.dataset.dataset_configs.spring
+  - /experiments/cw/datasets/da3_dtu@trainer.data.train.dataset.dataset_configs.da3_dtu
+  - /experiments/cw/datasets/da3_eth3d@trainer.data.train.dataset.dataset_configs.da3_eth3d
+  - /experiments/cw/datasets/da3_hiroom@trainer.data.train.dataset.dataset_configs.da3_hiroom
+  - /experiments/cw/datasets/da3_scannetpp@trainer.data.train.dataset.dataset_configs.da3_scannetpp
+  - /experiments/cw/datasets/da3_sevenscenes@trainer.data.train.dataset.dataset_configs.da3_sevenscenes
+  ########################################################## Include Some VAL DATASETS TO CHECK THE OVERFITTING PERFORMANCE ##########################################################
+  # Validation Datasets
+  #
+  # - /experiments/cw/datasets/blendmvs_test@trainer.data.val.dataset.dataset_configs.blendmvs_test
+  - /experiments/cw/datasets/omniobject3d_test@trainer.data.val.dataset.dataset_configs.omniobject3d_test
+  - /experiments/cw/datasets/scannetpp_test@trainer.data.val.dataset.dataset_configs.scannetpp_test
+  - /experiments/cw/datasets/spring_test@trainer.data.val.dataset.dataset_configs.spring_test
+  - /experiments/cw/datasets/taskonomy_test@trainer.data.val.dataset.dataset_configs.taskonomy_test
+  - /experiments/cw/datasets/wai_eth3d_wai_test@trainer.data.val.dataset.dataset_configs.wai_eth3d_wai_test
+

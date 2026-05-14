@@ -1,0 +1,14 @@
+# @package _global_
+# Ablation: y005t with node=1, explore queue, no harmonic mean
+
+defaults:
+  - /experiments/cw/y005t_n32
+
+submitit:
+  name: "y005_n1"
+  account: "fair_amaia_cw_explore"
+  qos: "explore"
+
+launcher:
+  num_nodes: 1
+

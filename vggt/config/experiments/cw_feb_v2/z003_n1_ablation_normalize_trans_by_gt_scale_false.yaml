@@ -1,0 +1,15 @@
+# @package _global_
+# Ablation: set camera normalize_trans_by_gt_scale = False
+
+defaults:
+  - /experiments/cw/z003_n1
+
+submitit:
+  name: "z003_n1_normalize_trans_by_gt_scale_false"
+
+trainer:
+  loss:
+    camera:
+      normalize_trans_by_gt_scale: False
+
+

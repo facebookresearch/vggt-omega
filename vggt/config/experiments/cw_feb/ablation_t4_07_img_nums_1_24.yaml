@@ -1,0 +1,16 @@
+# @package _global_
+# Ablation t4-07: img_nums: [1, 24]
+
+defaults:
+  - /experiments/cw/t4
+
+submitit:
+  name: "t4_ab07"
+
+trainer:
+  data:
+    train:
+      common_config:
+        img_nums: [1, 24]
+
+

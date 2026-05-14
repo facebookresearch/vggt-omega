@@ -1,0 +1,17 @@
+# @package _global_
+#
+# Disable MegaDepth depth supervision on top of r001.
+
+defaults:
+  - /experiments/cw/recheck/r001
+
+submitit:
+  name: "r024_megadepth_no_depth"
+
+trainer:
+  data:
+    train:
+      dataset:
+        dataset_configs:
+          megadepth:
+            disable_depth_loss: True

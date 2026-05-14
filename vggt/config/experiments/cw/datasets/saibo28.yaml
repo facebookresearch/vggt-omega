@@ -1,0 +1,19 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: s3://dino/datasets/repligen/dec/shier_v1/28_saibo/
+dataset_prefix: "_saibo28"
+step_range: 160
+max_depth: 256
+enable_invalid_area_loss: True
+len_dataset: 166
+max_interval: 160
+sample_by_index: True
+sequence_list_file: /home/jianyuan/src/omega/projects/vggt/data/valid_seqs/28_saibo.txt
+
+len_dataset_scale: 2.0
+max_interval_ratio: 0.2
+
+is_synt: True
+is_g: True
+
+# dynamic

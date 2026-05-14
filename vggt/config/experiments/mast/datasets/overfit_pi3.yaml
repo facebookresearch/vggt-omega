@@ -1,0 +1,31 @@
+# @package _group_
+_target_: vggt.data.datasets.unified_pi3.UnifiedPi3Dataset
+UNIFIED_DIR: /checkpoint/repligen/jianyuan/data/overfit_hospital/
+dataset_prefix: "_overfit_hospital"
+step_range: 50
+max_depth: 256
+enable_invalid_area_loss: True
+len_dataset: 100000
+max_interval: 64
+aug_crop: 16
+aug_focal: 0.9
+
+len_dataset_scale: 1.0
+
+# ============================================================================
+# Pi3-Compatible Frame Sampling Options
+# ============================================================================
+# To reproduce Pi3's original sampling behavior, enable use_pi3_sampling=True
+# and set appropriate pi3_max_distance based on dataset type:
+#   - TartanAir: pi3_max_distance=24, pi3_stratified_prob=0.0
+#   - ScanNet: pi3_max_distance=240, pi3_stratified_prob=0.5
+#
+# When use_pi3_sampling=False (default), the dataset uses vggt's ranking-based
+# sequential sampling which differs from Pi3's random window sampling.
+# ============================================================================
+use_pi3_sampling: True  # Using Pi3's original sampling strategy for reproducing Pi3 results
+pi3_max_distance: 24  # Window size parameter (scaled by frame_num/8)
+pi3_random_sample_thres: 0.1  # 10% chance of full-sequence sampling when frame_num > 20
+pi3_stratified_prob: 0.0  # 0.5 for ScanNet-style stratified sampling
+
+is_synt: false

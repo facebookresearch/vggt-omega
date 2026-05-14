@@ -1,0 +1,19 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/mast/ablation01_multiscale_deconv_concat
+  - _self_
+
+
+submitit:
+  name: "ab05"
+
+trainer:
+  model:
+    DEPTH_HEAD:
+      # Ablation 6: interpolate + normal conv upsample, but only the last level.
+      intermediate_layer_idx: [23]
+      multiscale_out_channels: [1024]
+      multiscale_resize_type: "bilinear_normal_conv"
+

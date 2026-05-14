@@ -1,0 +1,14 @@
+# @package _global_
+
+defaults:
+  - /experiments/cw/linear/wlinear
+
+submitit:
+  name: "wlinear_k2"
+
+trainer:
+  model:
+    DEPTH_HEAD:
+      num_hypotheses: 2
+      predict_per_component_variance: False
+      share_variance_across_hypotheses: True

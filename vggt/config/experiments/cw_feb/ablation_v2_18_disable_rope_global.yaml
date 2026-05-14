@@ -1,0 +1,14 @@
+# @package _global_
+# Ablation v2-18: disable_rope_global: True
+
+defaults:
+  - /experiments/cw/reproduce_pi3_v2
+
+submitit:
+  name: "ab18"
+
+trainer:
+  model:
+    AGGREGATOR:
+      disable_rope_global: True
+

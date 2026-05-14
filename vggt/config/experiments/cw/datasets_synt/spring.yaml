@@ -1,0 +1,17 @@
+# @package _group_
+###
+### SYNTHETIC DATASET CONFIG
+### under cw/datasets_synt/
+###
+_target_: vggt.data.datasets.unified.UnifiedDataset
+dataset_prefix: "_spring"
+is_synt: True
+len_dataset: 20
+len_dataset_scale: 3.0
+max_depth: 128
+sample_by_index: True
+sky_mask_path: "moge_mask"
+step_range: 64
+UNIFIED_DIR: s3://dino/datasets/repligen/unified/spring/
+
+# dynamic

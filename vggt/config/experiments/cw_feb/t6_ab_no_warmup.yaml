@@ -1,0 +1,24 @@
+# @package _global_
+# Ablation: Minimal warmup (0.1% instead of 2%)
+
+defaults:
+  - /experiments/cw/t6
+
+submitit:
+  name: "t6_ab_no_warmup"
+
+trainer:
+  optim:
+    options:
+      lr:
+        - scheduler:
+            _target_: fvcore.common.param_scheduler.CompositeParamScheduler
+            schedulers:
+              - _target_: fvcore.common.param_scheduler.LinearParamScheduler
+                start_value: ${min_lr}
+                end_value: ${base_lr}
+              - _target_: fvcore.common.param_scheduler.CosineParamScheduler
+                start_value: ${base_lr}
+                end_value: ${min_lr}
+            lengths: [0.001, 0.999]
+            interval_scaling: ['rescaled', 'rescaled']

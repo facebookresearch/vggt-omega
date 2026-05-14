@@ -1,0 +1,20 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/cw/depth16_gp_patchgrid_shuffle_ch512
+  - _self_
+
+
+submitit:
+  name: "gp_patchgrid_shuffle_ch512_res2_3x3_gelu"
+  account: "fair_amaia_cw_scale"
+  qos: "scale"
+
+
+trainer:
+  model:
+    DEPTH_HEAD:
+      post_conv_mode: "res2_3x3_gelu"
+
+

@@ -1,0 +1,14 @@
+# @package _global_
+# Ablation: y005 with node=1, explore queue
+
+defaults:
+  - /experiments/cw/y005_n32
+
+submitit:
+  name: "y005_n1"
+  account: "fair_amaia_cw_explore"
+  qos: "explore"
+
+launcher:
+  num_nodes: 1
+

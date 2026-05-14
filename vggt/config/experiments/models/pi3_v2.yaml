@@ -1,0 +1,62 @@
+# @package _group_
+
+_target_: vggt.models.models.vggt.VGGT
+enable_head_amp: True
+init_aggregator_by_patch_embed: False
+patch_embed: "dinov2_vitl14_reg"
+img_size: ${img_size}
+patch_size: ${patch_size}
+embed_dim: 1024
+AGGREGATOR:
+  _target_: vggt.models.models.aggregator.Aggregator
+  num_register_tokens: ${aggregator_register_num}
+  patch_size: ${patch_size}
+  embed_dim: 1024
+  depth: 18
+  num_heads: 16
+  mlp_ratio: 4.0
+  use_qk_norm: True # note disabled qk norm here
+  global_attn_mode: "all"
+  global_attn_partial_ratio: -1
+  aa_order: ["frame", "global"] # note this is changed here
+  use_dino_clsreg: False
+  rope_dtype: "fp32"
+  disable_rope_global: False
+CAMERA_HEAD:
+  _target_: vggt.models.heads.camera_head_linear.CameraHeadLinear
+  dim_in: 2048
+  pose_encoding_type: "absT_quaR_FoV"
+  mlp_ratio: [0.5]
+DEPTH_HEAD:
+  _target_: vggt.models.heads.linear_head.LinearHead
+  dim_in: 2048
+  output_dim: 4
+  activation: "xy_exp"
+  conf_activation: "softplus_0.5_5"
+  patch_size: ${patch_size}
+  proj_type: "mlp_self"
+  mlp_ratio: 0.5
+  disable_conf: True
+  predict_mask: False
+  mask_activation: "sigmoid"
+  separate_conf_head: False
+  extra_attention_depth: 6
+  disable_last_layer_amp: True
+POINT_HEAD: null
+  # _target_: vggt.models.heads.linear_head.LinearHead
+  # dim_in: 2048
+  # output_dim: 4
+  # activation: "inv_log"
+  # conf_activation: "softplus_0.5_5"
+  # patch_size: ${patch_size}
+  # proj_type: "mlp_self"
+  # mlp_ratio: 0.5
+  # disable_conf: True
+  # predict_mask: True
+  # mask_activation: "sigmoid"
+  # separate_conf_head: False
+RAY_HEAD: null
+MATCH_HEAD: null
+
+
+

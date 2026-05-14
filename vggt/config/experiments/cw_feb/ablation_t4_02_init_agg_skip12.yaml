@@ -1,0 +1,15 @@
+# @package _global_
+# Ablation t4-02: init_aggregator_by_patch_embed: True, init_aggregator_skip_first_n: 12
+
+defaults:
+  - /experiments/cw/t4
+
+submitit:
+  name: "t4_ab02"
+
+trainer:
+  model:
+    init_aggregator_by_patch_embed: True
+    init_aggregator_skip_first_n: 12
+
+

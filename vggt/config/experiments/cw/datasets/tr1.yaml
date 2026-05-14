@@ -1,0 +1,20 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: s3://dino/datasets/repligen/dec/tr1/
+dataset_prefix: "_tr1"
+step_range: 256
+max_depth: 64
+len_dataset: 231
+max_interval: 128
+enable_invalid_area_loss: True
+sequence_list_file: /home/jianyuan/src/omega/projects/vggt/data/valid_seqs/tr1.txt
+
+len_dataset_scale: 1.0
+max_interval_ratio: 0.2
+
+
+is_synt: True
+is_g: True
+
+
+# dynamic

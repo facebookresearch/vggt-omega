@@ -1,0 +1,30 @@
+train: 
+  batch_size_per_gpu: 16
+  OFFICIAL_EPOCH_LENGTH: 1756
+  cell_augmentation: true
+student: 
+  arch: vit_large
+  patch_size: 16
+  in_chans: 4
+  drop_path_rate: 0.1
+  block_chunks: 4
+teacher:
+  momentum_teacher: 0.996
+  warmup_teacher_temp_epochs: 20
+  in_chans: 4
+optim:
+  weight_decay_end: 0.2
+  base_lr: 5.0e-4 
+  warmup_epochs: 20
+crops:
+  global_crops_scale:
+  - 0.4
+  - 1.0
+  local_crops_number: 8
+  local_crops_scale:
+  - 0.005
+  - 0.4
+  global_crops_size: 224
+  local_crops_size: 96
+evaluation:  
+  eval_period_iterations: 9000

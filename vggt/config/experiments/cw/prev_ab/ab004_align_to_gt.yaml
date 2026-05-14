@@ -1,0 +1,13 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/cw/ab004_base
+  - _self_
+
+
+trainer:
+  loss:
+    align_pred_to_gt: True
+
+

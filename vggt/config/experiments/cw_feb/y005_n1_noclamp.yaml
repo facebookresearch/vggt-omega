@@ -1,0 +1,15 @@
+# @package _global_
+# Ablation: y005 with node=1, disable max_loss_val clamping
+
+defaults:
+  - /experiments/cw/y005_n1
+
+trainer:
+  loss:
+    depth:
+      max_loss_val: null
+    point:
+      max_loss_val: null
+    preg:
+      max_loss_val: null
+

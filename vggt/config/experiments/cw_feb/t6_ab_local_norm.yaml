@@ -1,0 +1,14 @@
+# @package _global_
+# Ablation: Change normalize_gt and normalization_type to local
+
+defaults:
+  - /experiments/cw/t6
+
+submitit:
+  name: "t6_ab_local_norm"
+
+trainer:
+  loss:
+    normalize_gt: "local"
+    normalization_type: "local"
+

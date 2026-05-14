@@ -1,0 +1,14 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: s3://dino/datasets/repligen/unified/wai_paralleldomain4d/
+dataset_prefix: "_wai_paralleldomain4d"
+step_range: 64
+max_depth: 256
+len_dataset: 218
+
+len_dataset_scale: 1.0
+
+is_synt: True
+
+
+# dynamic

@@ -1,0 +1,26 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: s3://dino/datasets/repligen/mar_v3/dyna_v1/
+dataset_prefix: "_dyna_v1"
+step_range: 128
+max_depth: 64
+len_dataset: 501
+sample_by_index: True
+max_percentile: 96
+# min_percentile: 2
+sequence_list_file: /home/jianyuan/src/omega/projects/vggt/data/valid_seqs/dyna_v1.txt
+
+len_dataset_scale: 0.15
+
+is_synt: false
+
+disable_depth_loss: True
+
+max_interval: 128
+max_interval_ratio: 0.2
+
+
+
+
+
+# dynamic

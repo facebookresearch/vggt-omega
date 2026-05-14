@@ -1,0 +1,64 @@
+# @package _global_
+
+trainer:
+  _target_: vggt.trainer.trainer.Trainer
+  max_epochs: ???
+  mode: train
+  accelerator: cuda
+  seed_value: 123
+  val_epoch_freq: 1
+
+  optim:
+    amp:
+      enabled: True
+      amp_dtype: bfloat16 # bfloat16 or float16
+    gradient_clip: NULL
+    optimizer: ???
+    options:
+      weight_decay: ???
+      lr: ???
+
+  logging:
+    tensorboard_writer:
+      _target_: omnivore.logger.make_tensorboard_logger
+      log_dir:  ${launcher.experiment_log_dir}/tensorboard
+      flush_secs: 120
+    log_dir: ${launcher.experiment_log_dir}/logs
+    log_freq: 50
+    log_level_primary: INFO
+
+  distributed:
+   backend: nccl
+   comms_dtype: NULL
+   find_unused_parameters: False
+
+  checkpoint:
+    save_dir: ${launcher.experiment_log_dir}/checkpoints
+    save_freq: 1 # 0 only last checkpoint is saved.
+    model_weight_initializer: NULL
+
+  limit_train_batches: NULL
+  limit_val_batches: NULL
+  env_variables: NULL
+
+  cuda:
+   # https://pytorch.org/docs/stable/backends.html
+   allow_tf32: False
+   cudnn_deterministic: False
+   cudnn_benchmark: False
+
+  data: ???
+  model: ???
+
+  meters: NULL
+  loss: NULL
+
+launcher:
+  gpus_per_node: ???
+  num_nodes: ???
+  experiment_log_dir: ???
+
+hydra:
+  output_subdir: NULL
+  run:
+    dir: .

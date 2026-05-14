@@ -1,0 +1,24 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: s3://dino/datasets/repligen/dec/rigid_collected/
+dataset_prefix: "_rigid_todo"
+step_range: 128
+max_depth: 256
+len_dataset: 100
+sample_by_index: True
+human_mask_path: "human"
+sky_mask_path: "moge_mask"
+# max_percentile: 99
+# min_percentile: 1
+sequence_list_file: /home/jianyuan/src/omega/projects/vggt/data/valid_seqs/rigid_todo.txt
+
+edge_rtol_thres: 0.03
+
+is_synt: false
+
+
+
+max_interval: 64
+max_interval_ratio: 0.2
+mask_dilate_iters: 5
+

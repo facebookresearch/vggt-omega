@@ -1,0 +1,16 @@
+# @package _group_
+###
+### SYNTHETIC DATASET CONFIG
+### under cw/datasets_synt/
+###
+_target_: vggt.data.datasets.unified.UnifiedDataset
+dataset_prefix: "_sstk_593k_v1"
+is_synt: True
+len_dataset: 1050
+len_dataset_scale: 0.4
+max_depth: 16
+max_interval: 64
+sample_by_index: True
+sequence_list_file: /home/jianyuan/src/omega/projects/vggt/data/valid_seqs/sstk_593k_v1.txt
+step_range: 64
+UNIFIED_DIR: s3://dino/datasets/repligen/dec/sstk_593k_v1/

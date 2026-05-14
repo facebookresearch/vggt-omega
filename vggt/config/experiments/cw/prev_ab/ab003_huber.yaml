@@ -1,0 +1,17 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/cw/ab003_base
+  - _self_
+
+
+trainer:
+  loss:
+    camera:
+      # Keep all settings aligned with ab003_huber_consistent for apple-to-apple comparison.
+      loss_type: "huber"
+      weight: 2000.0
+
+
+

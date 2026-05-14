@@ -1,0 +1,19 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: s3://dino/datasets/repligen/mar/se_col_v2/
+dataset_prefix: "_se_col"
+step_range: 64
+max_depth: 128
+len_dataset: 416
+sample_by_index: True
+max_interval: 64  
+sequence_list_file: /home/jianyuan/src/omega/projects/vggt/data/valid_seqs/sekai_colmap_v2_cw.txt
+len_dataset_scale: 0.5
+
+is_synt: false
+
+
+
+
+
+# dynamic

@@ -1,0 +1,20 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/cw/ab_base
+  - _self_
+
+
+submitit:
+  name: "ab_data_1_50"
+
+
+trainer:
+  data:
+    train:
+      common_config:
+        sample_dict: "s2"
+        ratio_dict: "s2"
+        img_nums: [1, 50]
+        thread_io_worker_num: 6

@@ -1,0 +1,15 @@
+# @package _global_
+#
+# Ablation from t7: Depth head proj_zero_init: True
+
+defaults:
+  - /experiments/cw/t7
+
+submitit:
+  name: "t7_ablation_proj_zero_init"
+
+trainer:
+  model:
+    DEPTH_HEAD:
+      proj_zero_init: True
+

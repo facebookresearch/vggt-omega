@@ -1,0 +1,20 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: /checkpoint/repligen/jianyuan/data/stereo4d/
+dataset_prefix: "_stereo4d"
+step_range: 128
+max_depth: 128
+len_dataset: 688 #not really sure about the quality of stereo4d, so we use a small dataset
+sample_by_index: True
+sequence_list_file: /mnt/coreai_3d/tree/jianyuan/valid_seqs/stereo4d.txt
+
+disable_depth_loss: True
+
+
+
+len_dataset_scale: 0.025
+
+is_synt: false
+
+
+# dynamic

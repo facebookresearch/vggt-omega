@@ -1,0 +1,14 @@
+# @package _global_
+# z001_n1_flash: inherits z001_n1 + enables flash attention in the aggregator
+
+defaults:
+  - /experiments/cw/z001_n1
+
+submitit:
+  name: "z001_n1_noflash"
+
+trainer:
+  model:
+    AGGREGATOR:
+      use_flash_attn: False
+

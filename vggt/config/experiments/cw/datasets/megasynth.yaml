@@ -1,0 +1,13 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: s3://dino/datasets/repligen/dec/megasynth
+dataset_prefix: "_megasynth"
+step_range: 16
+max_depth: 256
+len_dataset: 649
+sample_by_index: True
+sequence_list_file: /home/jianyuan/src/omega/projects/vggt/data/valid_seqs/megasynth.txt
+
+len_dataset_scale: 0.5
+
+is_synt: True

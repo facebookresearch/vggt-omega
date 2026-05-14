@@ -1,0 +1,16 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: s3://dino/datasets/repligen/dec/wildrgbd/
+dataset_prefix: "_wildrgbd"
+step_range: 256
+max_depth: 32
+len_dataset: 477
+sample_by_index: True
+max_interval: 64
+# mask_path: "depth_masks"
+
+sequence_list_file: /home/jianyuan/src/omega/projects/vggt/data/valid_seqs/wildrgbd.txt
+disable_depth_loss: True
+len_dataset_scale: 0.025
+
+is_synt: false

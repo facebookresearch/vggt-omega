@@ -1,0 +1,18 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/cw/ab_base
+  - _self_
+
+
+submitit:
+  name: "ab_no_track"
+
+
+load_track: False
+
+
+trainer:
+  loss:
+    track: null

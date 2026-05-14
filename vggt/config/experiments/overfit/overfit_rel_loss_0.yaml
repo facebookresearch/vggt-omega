@@ -1,0 +1,19 @@
+# @package _global_
+# Inherits from overfit_base.yaml
+# Sets rel_loss_weight to 0.0 for depth, point, and preg
+
+defaults:
+  - /experiments/overfit/overfit_base
+
+submitit:
+  name: "overfit_rel_loss_0"
+
+trainer:
+  loss:
+    depth:
+      rel_loss_weight: 0.0
+    point:
+      rel_loss_weight: 0.0
+    preg:
+      rel_loss_weight: 0.0
+

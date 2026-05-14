@@ -1,0 +1,16 @@
+# @package _global_
+# Ablation 19: low_res_blur: -1
+
+defaults:
+  - /experiments/cw/reproduce_pi3
+
+submitit:
+  name: "ablation_19_no_low_res_blur"
+
+trainer:
+  data:
+    train:
+      common_config:
+        augs:
+          low_res_blur: -1
+

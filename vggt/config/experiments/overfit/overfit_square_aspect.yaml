@@ -1,0 +1,17 @@
+# @package _global_
+# Inherits from overfit_base.yaml
+# Changes aspects to [1.0, 1.0] (square only)
+
+defaults:
+  - /experiments/overfit/overfit_base
+
+submitit:
+  name: "overfit_square_aspect"
+
+trainer:
+  data:
+    train:
+      common_config:
+        augs:
+          aspects: [1.0, 1.0]
+

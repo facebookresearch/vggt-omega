@@ -1,0 +1,9 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: /checkpoint/repligen/jianyuan/data/wai_eth3d_wai/
+dataset_prefix: "_wai_eth3d_wai"
+step_range: 64
+max_depth: 64
+len_dataset: 100
+
+is_synt: false

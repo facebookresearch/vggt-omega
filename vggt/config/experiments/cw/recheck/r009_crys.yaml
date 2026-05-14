@@ -1,0 +1,22 @@
+# @package _global_
+#
+# Add the crys* series on top of r001 and scale the series
+# to about 30% of train sampling while preserving internal ratios.
+
+defaults:
+  - /experiments/cw/recheck/r001
+  - /experiments/cw/datasets_synt/crys@trainer.data.train.dataset.dataset_configs.crys
+  - /experiments/cw/datasets_synt/crys48@trainer.data.train.dataset.dataset_configs.crys48
+
+submitit:
+  name: "r009_crys"
+
+trainer:
+  data:
+    train:
+      dataset:
+        dataset_configs:
+          crys:
+            len_dataset_scale: 16.5
+          crys48:
+            len_dataset_scale: 8.25

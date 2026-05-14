@@ -1,0 +1,13 @@
+# @package _global_
+# Ablation v2-22: align_pred_to_gt: False
+
+defaults:
+  - /experiments/cw/reproduce_pi3_v2
+
+submitit:
+  name: "ab22"
+
+trainer:
+  loss:
+    align_pred_to_gt: False
+

@@ -1,0 +1,13 @@
+# @package _global_
+# Ablation v2-17: align_pred_to_gt: False, normalize_predictions: False
+
+defaults:
+  - /experiments/cw/reproduce_pi3_v2
+
+submitit:
+  name: "ab17"
+
+trainer:
+  loss:
+    align_pred_to_gt: False
+    normalize_predictions: False

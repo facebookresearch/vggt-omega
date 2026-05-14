@@ -1,0 +1,15 @@
+# @package _group_
+
+_target_: vggt.models.models.da3_adapter.DA3Adapter
+da3_model_name: "da3-large"
+da3_config: null
+export_feat_layers: []
+infer_gs: False
+use_ray_pose: False
+ref_view_strategy: "saddle_balanced"
+return_pose_encoding: True
+pose_encoding_type: "absT_quaR_FoV"
+use_input_camera_token: False
+freeze_unused_modules: True
+normalize_images_for_da3: True
+da3_output_extrinsics_convention: "w2c"

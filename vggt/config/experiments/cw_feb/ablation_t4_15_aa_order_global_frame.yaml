@@ -1,0 +1,15 @@
+# @package _global_
+# Ablation t4-15: aa_order: ["global", "frame"]
+
+defaults:
+  - /experiments/cw/t4
+
+submitit:
+  name: "t4_ab15"
+
+trainer:
+  model:
+    AGGREGATOR:
+      aa_order: ["global", "frame"]
+
+

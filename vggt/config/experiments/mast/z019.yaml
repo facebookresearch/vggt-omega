@@ -1,0 +1,16 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/mast/z018
+  - _self_
+
+
+submitit:
+  name: "z019"
+
+
+trainer:
+  loss:
+    camera:
+      weight: 20.0

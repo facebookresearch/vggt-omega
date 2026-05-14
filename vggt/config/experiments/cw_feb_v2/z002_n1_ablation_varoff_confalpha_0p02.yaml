@@ -1,0 +1,19 @@
+# @package _global_
+# Ablation: use_gt_var_weighting off, conf_alpha = 0.02
+
+defaults:
+  - /experiments/cw/z002_n1
+
+submitit:
+  name: "z002_n1_varoff_confalpha_0p02"
+
+trainer:
+  loss:
+    depth:
+      use_gt_var_weighting: False
+      conf_alpha: 0.02
+    point:
+      use_gt_var_weighting: False
+      conf_alpha: 0.02
+
+

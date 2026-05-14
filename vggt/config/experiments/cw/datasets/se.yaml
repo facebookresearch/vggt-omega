@@ -1,0 +1,16 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: s3://dino/datasets/repligen/dec/se_v2/
+dataset_prefix: "_se"
+step_range: 64
+max_depth: 128
+len_dataset: 552
+sample_by_index: True
+max_interval: 64  
+sequence_list_file: /home/jianyuan/src/omega/projects/vggt/data/valid_seqs/se.txt
+disable_depth_loss: True  
+len_dataset_scale: 0.025
+
+is_synt: false
+
+# dynamic

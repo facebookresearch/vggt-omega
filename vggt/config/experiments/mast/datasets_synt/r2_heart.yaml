@@ -1,0 +1,20 @@
+# @package _group_
+###
+### SYNTHETIC DATASET CONFIG
+### under cw/datasets_synt/
+###
+_target_: vggt.data.datasets.unified.UnifiedDataset
+dataset_prefix: "_r2_heart"
+enable_invalid_area_loss: True
+is_g: True
+is_synt: True
+len_dataset: 142
+len_dataset_scale: 1.0
+max_depth: 256
+max_interval: 128
+sample_by_index: True
+sequence_list_file: /mnt/coreai_3d/tree/jianyuan/valid_seqs_apr/r2_heart.txt
+step_range: 256
+UNIFIED_DIR: /checkpoint/repligen/jianyuan/data/shier_r2/
+
+# dynamic

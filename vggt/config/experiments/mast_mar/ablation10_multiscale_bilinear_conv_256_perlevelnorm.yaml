@@ -1,0 +1,17 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/mast/ablation07_multiscale_bilinear_conv_256
+  - _self_
+
+
+submitit:
+  name: "ab10"
+
+trainer:
+  model:
+    DEPTH_HEAD:
+      # Same as ablation07_multiscale_bilinear_conv_256, but use per-level normalization.
+      multiscale_norm_type: "per_level"
+

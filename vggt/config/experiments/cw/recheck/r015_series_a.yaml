@@ -1,0 +1,28 @@
+# @package _global_
+#
+# Series A: col, mvs, ho_cap, uco3d.
+# Add the whole series on top of r001 and scale it to about 30% of train sampling.
+
+defaults:
+  - /experiments/cw/recheck/r001
+  - /experiments/cw/datasets_real/col@trainer.data.train.dataset.dataset_configs.col
+  - /experiments/cw/datasets_real/mvs@trainer.data.train.dataset.dataset_configs.mvs
+  - /experiments/cw/datasets_real/ho_cap@trainer.data.train.dataset.dataset_configs.ho_cap
+  - /experiments/cw/datasets_real/uco3d@trainer.data.train.dataset.dataset_configs.uco3d
+
+submitit:
+  name: "r015_series_a"
+
+trainer:
+  data:
+    train:
+      dataset:
+        dataset_configs:
+          col:
+            len_dataset_scale: 2.40003
+          mvs:
+            len_dataset_scale: 0.480006
+          ho_cap:
+            len_dataset_scale: 0.26667
+          uco3d:
+            len_dataset_scale: 1.33335

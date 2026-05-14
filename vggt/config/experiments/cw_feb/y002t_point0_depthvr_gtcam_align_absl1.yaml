@@ -1,0 +1,14 @@
+# @package _global_
+# Ablation: point loss weight 0.0, depth valid_range -1, normalization_type global_gtcam, align_pred_to_gt, abs_l1_loss_ratio 0.1
+
+defaults:
+  - /experiments/cw/y002t_point0_depthvr_gtcam_align
+
+submitit:
+  name: "y002t_point0_depthvr_gtcam_align_absl1"
+
+trainer:
+  loss:
+    depth:
+      abs_l1_loss_ratio: 0.1
+

@@ -1,0 +1,17 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: /checkpoint/repligen/jianyuan/data/midair/
+dataset_prefix: "_midair"
+step_range: 160    # dangerous, but okay for midair
+max_depth: 1024
+enable_invalid_area_loss: True
+sample_by_index: True
+len_dataset: 120
+max_interval: 160
+
+len_dataset_scale: 2.0
+
+is_synt: True
+max_interval_ratio: 0.2
+
+

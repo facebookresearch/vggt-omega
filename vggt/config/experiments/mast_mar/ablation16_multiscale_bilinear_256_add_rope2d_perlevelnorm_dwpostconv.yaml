@@ -1,0 +1,17 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/mast/ablation15_multiscale_bilinear_256_add_rope2d_perlevelnorm
+  - _self_
+
+
+submitit:
+  name: "ab16"
+
+trainer:
+  model:
+    DEPTH_HEAD:
+      # Add a lightweight depthwise post-conv to reduce patch artifacts.
+      post_conv_type: "dw_conv"
+

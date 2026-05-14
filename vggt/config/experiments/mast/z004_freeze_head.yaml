@@ -1,0 +1,17 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/mast/z004_freeze_agg
+  - _self_
+
+
+submitit:
+  name: "z004_freeze_head"
+
+
+trainer:
+  optim:
+    frozen_module_names:
+      - "*camera_head*"
+      - "*depth_head*"

@@ -1,0 +1,16 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/cw/debug/base_n8
+  - _self_
+
+
+submitit:
+  name: "no_dino_cls_reg"
+
+
+trainer:
+  model:
+    AGGREGATOR:
+      use_dino_clsreg: False

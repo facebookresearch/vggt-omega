@@ -1,0 +1,17 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: /mnt/coreai_3d/tree/jianyuan/may/unified/huaxiang/
+dataset_prefix: "_z16"
+step_range: 4
+max_depth: 256
+len_dataset: 2
+sample_by_index: True
+len_dataset_scale: 1.0
+# edge_rtol_thres: 0.05
+is_synt: false
+max_interval: 6
+max_interval_ratio: 0.1
+
+disable_depth_loss: True
+
+# fps_1_first22

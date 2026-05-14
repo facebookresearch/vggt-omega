@@ -1,0 +1,20 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/cw/depth01_gated_progressive
+  - _self_
+
+
+submitit:
+  name: "gp_two_stage_no_pw"
+  account: "fair_amaia_cw_explore"
+  qos: "explore"
+
+
+trainer:
+  model:
+    DEPTH_HEAD:
+      gated_progressive_two_stage_upsample: True
+      gated_progressive_upsample_use_pointwise_conv: False
+

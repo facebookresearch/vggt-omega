@@ -1,0 +1,13 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: /mnt/coreai_3d/tree/jianyuan/data/visual
+dataset_prefix: "_z1"
+step_range: 64
+max_depth: 256
+len_dataset: 60
+sample_by_index: True
+len_dataset_scale: 1.0
+edge_rtol_thres: 0.05
+is_synt: false
+max_interval: 64
+max_interval_ratio: 0.1

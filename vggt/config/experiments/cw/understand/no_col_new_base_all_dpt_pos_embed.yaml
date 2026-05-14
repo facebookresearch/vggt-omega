@@ -1,0 +1,20 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/cw/understand/no_col_new_base
+  - _self_
+
+
+submitit:
+  name: "no_col_new_base_all_dpt_pos_embed"
+  # account: "fair_amaia_cw_scale"
+  # qos: "scale"
+
+
+trainer:
+  model:
+    DEPTH_HEAD:
+      pos_embed: True
+    POINT_HEAD:
+      pos_embed: True

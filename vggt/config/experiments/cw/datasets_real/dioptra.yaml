@@ -1,0 +1,23 @@
+# @package _group_
+_target_: vggt.data.datasets.unified_covis.UnifiedCovisDataset
+UNIFIED_DIR: s3://dino/datasets/repligen/dec/dioptra/
+dataset_prefix: "_dioptra"
+max_depth: 128
+len_dataset: 120
+sequence_list_file: /home/jianyuan/src/omega/projects/vggt/data/valid_seqs/dioptra.txt
+human_mask_path: "human"
+sky_mask_path: "moge_mask"
+
+
+len_dataset_scale: 0.1
+
+# edge_rtol_thres: 0.05
+
+disable_depth_loss: True
+
+
+is_synt: false
+is_g: false
+
+
+# dynamic

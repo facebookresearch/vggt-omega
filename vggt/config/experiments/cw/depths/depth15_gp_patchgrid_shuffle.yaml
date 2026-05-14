@@ -1,0 +1,22 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/cw/depth01_gated_progressive
+  - _self_
+
+
+submitit:
+  name: "gp_patchgrid_shuffle"
+  account: "fair_amaia_cw_scale"
+  qos: "scale"
+
+
+trainer:
+  model:
+    DEPTH_HEAD:
+      # Keep fused tokens at patch-grid scale (1/16 when patch_size=16),
+      # then pixel-shuffle directly to full resolution.
+      fuser_output_scale: 1
+
+

@@ -1,0 +1,19 @@
+# @package _group_
+###
+### SYNTHETIC DATASET CONFIG
+### under cw/datasets_synt/
+###
+_target_: vggt.data.datasets.unified.UnifiedDataset
+dataset_prefix: "_wai_gta_sfm"
+is_g: True
+is_synt: True
+len_dataset: 125
+len_dataset_scale: 1.5
+max_depth: 256
+max_interval: 32
+step_range: 32
+UNIFIED_DIR: s3://dino/datasets/repligen/unified/wai_gta_sfm/
+
+sequence_list_file: /home/jianyuan/src/omega/projects/vggt/data/valid_seqs/wai_gta_sfm.txt
+
+# dynamic

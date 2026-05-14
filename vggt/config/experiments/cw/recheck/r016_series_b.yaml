@@ -1,0 +1,22 @@
+# @package _global_
+#
+# Series B: scannet, scannet_extra.
+# Add the whole series on top of r001 and scale it to about 30% of train sampling.
+
+defaults:
+  - /experiments/cw/recheck/r001
+  - /experiments/cw/datasets_real/scannet@trainer.data.train.dataset.dataset_configs.scannet
+  - /experiments/cw/datasets_real/scannet_extra@trainer.data.train.dataset.dataset_configs.scannet_extra
+
+submitit:
+  name: "r016_series_b"
+
+trainer:
+  data:
+    train:
+      dataset:
+        dataset_configs:
+          scannet:
+            len_dataset_scale: 2.78
+          scannet_extra:
+            len_dataset_scale: 2.78

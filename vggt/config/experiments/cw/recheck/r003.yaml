@@ -1,0 +1,26 @@
+# @package _global_
+#
+# Enable derived point loss on top of r001 while keeping
+# the rest of the small-node t12-style setup unchanged.
+
+defaults:
+  - /experiments/cw/recheck/r001
+
+submitit:
+  name: "r003"
+
+trainer:
+  loss:
+    point:
+      weight: 1.0
+      weight_normal: 1.0
+      min_valid_pts: 100
+      abs_l1_loss_ratio: 1.0
+      rel_l1_loss_ratio: 0
+      use_conf_loss: False
+      conf_alpha: 0.2
+      add_separate_reg_loss: True
+      separate_reg_loss_weight: 2.0
+      apply_aux_loss_to_synthetic_only: True
+      valid_range: 0.99
+      gradient_loss_config: null

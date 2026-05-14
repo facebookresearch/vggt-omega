@@ -1,0 +1,17 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/mast/ablation11_multiscale_bilinear_256_add_rope2d
+  - _self_
+
+
+submitit:
+  name: "ab15"
+
+trainer:
+  model:
+    DEPTH_HEAD:
+      # Keep ab11 settings and switch multiscale normalization to per-level.
+      multiscale_norm_type: "per_level"
+

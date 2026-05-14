@@ -1,0 +1,14 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: /checkpoint/repligen/jianyuan/data/scannet_extra/
+dataset_prefix: "_scannet_extra"
+step_range: 256
+max_depth: 12
+len_dataset: 100
+mask_path: "depth_masks"
+sample_by_index: True
+
+len_dataset_scale: 0.1
+
+is_synt: false
+is_g: False

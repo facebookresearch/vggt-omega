@@ -1,0 +1,47 @@
+# @package _global_
+#
+# Add the spring/sintel/nrgbd/da3/dycheck/uyn/tum_dynamic/wai_eth3d_wai
+# group as one series on top of r001 and scale the whole series
+# to about 30% of train sampling.
+
+defaults:
+  - /experiments/cw/recheck/r001
+  - /experiments/cw/datasets_synt/spring@trainer.data.train.dataset.dataset_configs.spring
+  - /experiments/cw/datasets_synt/sintel@trainer.data.train.dataset.dataset_configs.sintel
+  - /experiments/cw/datasets_real/nrgbd@trainer.data.train.dataset.dataset_configs.nrgbd
+  - /experiments/cw/datasets_real/da3_hiroom@trainer.data.train.dataset.dataset_configs.da3_hiroom
+  - /experiments/cw/datasets_real/da3_scannetpp@trainer.data.train.dataset.dataset_configs.da3_scannetpp
+  - /experiments/cw/datasets_real/da3_sevenscenes@trainer.data.train.dataset.dataset_configs.da3_sevenscenes
+  - /experiments/cw/datasets_real/dycheck@trainer.data.train.dataset.dataset_configs.dycheck
+  - /experiments/cw/datasets_real/uyn@trainer.data.train.dataset.dataset_configs.uyn
+  - /experiments/cw/datasets_real/tum_dynamic@trainer.data.train.dataset.dataset_configs.tum_dynamic
+  - /experiments/cw/datasets_real/wai_eth3d_wai@trainer.data.train.dataset.dataset_configs.wai_eth3d_wai
+
+submitit:
+  name: "r014_eval_series"
+
+trainer:
+  data:
+    train:
+      dataset:
+        dataset_configs:
+          spring:
+            len_dataset_scale: 12.8
+          sintel:
+            len_dataset_scale: 4.2
+          nrgbd:
+            len_dataset_scale: 7.6
+          da3_hiroom:
+            len_dataset_scale: 7.7
+          da3_scannetpp:
+            len_dataset_scale: 7.6
+          da3_sevenscenes:
+            len_dataset_scale: 4.2
+          dycheck:
+            len_dataset_scale: 8.5
+          uyn:
+            len_dataset_scale: 4.2
+          tum_dynamic:
+            len_dataset_scale: 8.5
+          wai_eth3d_wai:
+            len_dataset_scale: 7.7

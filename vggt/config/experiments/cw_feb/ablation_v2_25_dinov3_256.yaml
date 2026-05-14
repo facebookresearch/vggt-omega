@@ -1,0 +1,16 @@
+# @package _global_
+# Ablation v2-25: DINOv3 Large with 256x256 input, patch_size: 16
+
+defaults:
+  - /experiments/cw/reproduce_pi3_v2
+
+img_size: 256
+patch_size: 16
+
+submitit:
+  name: "ab25"
+
+trainer:
+  model:
+    patch_embed: "dinov3_vitl16"
+

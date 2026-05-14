@@ -1,0 +1,15 @@
+# @package _global_
+# Ablation: depth conf_alpha = 0.01
+
+defaults:
+  - /experiments/cw/z002_n1
+
+submitit:
+  name: "z002_n1_confalpha_0p01"
+
+trainer:
+  loss:
+    depth:
+      conf_alpha: 0.01
+
+

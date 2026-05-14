@@ -1,0 +1,24 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/cw/k/base
+  - _self_
+
+
+submitit:
+  name: "camera_only"
+
+
+load_track: False
+
+
+trainer:
+  model:
+    DEPTH_HEAD: null
+    POINT_HEAD: null
+  loss:
+    depth: null
+    point: null
+    preg: null
+    track: null

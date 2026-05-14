@@ -1,0 +1,13 @@
+# @package _global_
+# Ablation 10: align_resolution: 10240
+
+defaults:
+  - /experiments/cw/reproduce_pi3
+
+submitit:
+  name: "ablation_10_align_res_10240"
+
+trainer:
+  loss:
+    align_resolution: 10240
+

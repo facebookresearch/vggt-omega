@@ -1,0 +1,15 @@
+# @package _global_
+# Ablation 15: rescale_prob: -1
+
+defaults:
+  - /experiments/cw/reproduce_pi3
+
+submitit:
+  name: "ablation_15_no_rescale"
+
+trainer:
+  data:
+    train:
+      common_config:
+        rescale_prob: -1
+

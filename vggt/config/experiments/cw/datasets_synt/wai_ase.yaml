@@ -1,0 +1,17 @@
+# @package _group_
+###
+### SYNTHETIC DATASET CONFIG
+### under cw/datasets_synt/
+###
+_target_: vggt.data.datasets.unified.UnifiedDataset
+dataset_prefix: "_wai_ase"
+force_crop: 32
+is_synt: True
+len_dataset: 735
+len_dataset_scale: 0.6
+max_interval: 50
+max_interval_ratio: 0.2
+sample_by_index: True
+sequence_list_file: /home/jianyuan/src/omega/projects/vggt/data/valid_seqs/wai_ase.txt
+step_range: 64
+UNIFIED_DIR: s3://dino/datasets/repligen/dec/wai_ase_V2/

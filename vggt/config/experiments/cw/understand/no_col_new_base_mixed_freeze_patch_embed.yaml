@@ -1,0 +1,16 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/cw/understand/no_col_new_base_mixed
+  - _self_
+
+
+submitit:
+  name: "no_col_new_base_mixed_freeze_patch_embed"
+
+
+trainer:
+  optim:
+    frozen_module_names:
+      - "*patch_embed*"

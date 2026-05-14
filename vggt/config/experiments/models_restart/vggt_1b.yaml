@@ -1,0 +1,58 @@
+# @package _group_
+
+_target_: vggt.models.models.vggt.VGGT
+enable_head_amp: False
+init_aggregator_by_patch_embed: True
+patch_embed: "dinov3_vitl16"
+img_size: ${img_size}
+patch_size: ${patch_size}
+embed_dim: 1024
+AGGREGATOR:
+  _target_: vggt.models.models.aggregator.Aggregator
+  num_register_tokens: ${aggregator_register_num}
+  patch_size: ${patch_size}
+  embed_dim: 1024
+  depth: 24
+  num_heads: 16
+  mlp_ratio: 4.0
+  use_qk_norm: True
+  global_attn_mode: "specials"
+  global_attn_indices: [2, 6, 9, 14, 20]
+  aa_order: ["frame", "global"]
+  use_dino_clsreg: True
+  rope_dtype: "fp32"
+  disable_rope_global: True
+CAMERA_HEAD:
+  _target_: vggt.models.heads.camera_head_linear.CameraHeadLinear
+  dim_in: 2048
+  pose_encoding_type: "absT_quaR_FoV"
+  mlp_ratio: [0.5]
+  patch_size: ${patch_size}
+  disable_last_layer_amp: True
+DEPTH_HEAD:
+  _target_: vggt.models.heads.linear_head.LinearHead
+  dim_in: 2048
+  output_dim: 2
+  activation: "exp"
+  conf_activation: "expp1"
+  patch_size: ${patch_size}
+  proj_type: "mlp_self"
+  mlp_ratio: 0.5
+  disable_last_layer_amp: True
+POINT_HEAD: null
+RAY_HEAD: null
+  # _target_: vggt.models.heads.linear_head.LinearHead
+  # dim_in: 2048
+  # output_dim: 6
+  # activation: "none"
+  # patch_size: ${patch_size}
+  # proj_type: "mlp_self"
+  # mlp_ratio: 0.5
+MATCH_HEAD: null
+  # _target_: vggt.models.heads.linear_feat_head.LinearFeatHead
+  # predict_tokens_dim: 512
+  # dim_in: 2048
+  # patch_size: ${patch_size}
+  # mlp_ratio: 0.5
+  # normalize_act: "norm"
+

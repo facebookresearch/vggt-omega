@@ -1,0 +1,20 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/cw/debug/base_n8
+  - _self_
+
+
+submitit:
+  name: "no_dino_cls_reg_with_pos_embed"
+
+
+trainer:
+  model:
+    AGGREGATOR:
+      use_dino_clsreg: False
+    DEPTH_HEAD:
+      pos_embed: True
+    POINT_HEAD:
+      pos_embed: True

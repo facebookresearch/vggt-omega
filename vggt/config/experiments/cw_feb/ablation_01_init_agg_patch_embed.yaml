@@ -1,0 +1,13 @@
+# @package _global_
+# Ablation 1: init_aggregator_by_patch_embed: True
+
+defaults:
+  - /experiments/cw/reproduce_pi3
+
+submitit:
+  name: "ablation_01_init_agg_patch_embed"
+
+trainer:
+  model:
+    init_aggregator_by_patch_embed: True
+

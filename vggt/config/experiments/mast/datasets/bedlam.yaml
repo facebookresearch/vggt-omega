@@ -1,0 +1,18 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: /checkpoint/repligen/jianyuan/data/bedlam_v3/
+dataset_prefix: "_bedlam"
+step_range: 64
+max_depth: 16
+len_dataset: 377
+sample_by_index: True
+max_interval: 16
+max_interval_ratio: 0.1
+sequence_list_file: /mnt/coreai_3d/tree/jianyuan/valid_seqs/bedlam_v3.txt
+
+len_dataset_scale: 0.4
+
+is_synt: True
+
+
+# dynamic

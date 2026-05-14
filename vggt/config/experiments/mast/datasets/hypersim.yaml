@@ -1,0 +1,11 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: /checkpoint/repligen/jianyuan/data/hypersim/
+dataset_prefix: "_hypersim"
+step_range: 128
+max_depth: 128
+len_dataset: 177
+
+len_dataset_scale: 1.0
+
+is_synt: True

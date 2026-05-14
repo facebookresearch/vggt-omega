@@ -1,0 +1,17 @@
+# @package _global_
+# Inherits from overfit_base.yaml
+# Uses linear proj_type for depth and point heads instead of mlp_self
+
+defaults:
+  - /experiments/overfit/overfit_base
+
+submitit:
+  name: "overfit_linear_head"
+
+trainer:
+  model:
+    DEPTH_HEAD:
+      proj_type: "linear"
+    POINT_HEAD:
+      proj_type: "linear"
+

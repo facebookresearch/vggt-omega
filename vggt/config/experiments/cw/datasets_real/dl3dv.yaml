@@ -1,0 +1,24 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: s3://dino/datasets/repligen/unified/dl3dv/
+human_mask_path: "human"
+sky_mask_path: "moge_mask"
+sequence_list_file: /home/jianyuan/src/omega/projects/vggt/data/valid_seqs/dl3dv_clean_v1.txt
+dataset_prefix: "_dl3dv"
+max_depth: 128
+len_dataset: 361
+
+len_dataset_scale: 1.0
+
+edge_rtol_thres: 0.03
+
+is_synt: false
+
+
+step_range: 128
+max_interval: 128 #24
+max_interval_ratio: 0.2
+
+
+# Apr13 tower: max_percentile: 95
+

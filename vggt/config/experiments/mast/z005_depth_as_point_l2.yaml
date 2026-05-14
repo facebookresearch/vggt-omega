@@ -1,0 +1,16 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/mast/z005_depth_as_point
+  - _self_
+
+
+submitit:
+  name: "z005_depth_as_point_l2"
+
+
+trainer:
+  loss:
+    depth:
+      loss_type: "l2"

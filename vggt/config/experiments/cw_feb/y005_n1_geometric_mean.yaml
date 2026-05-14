@@ -1,0 +1,13 @@
+# @package _global_
+# Ablation: y005 with node=1, explore queue, use geometric mean
+
+defaults:
+  - /experiments/cw/y005_n1
+
+submitit:
+  name: "y005_n1_geometric_mean"
+
+trainer:
+  loss:
+    mean_type: "geometric"
+

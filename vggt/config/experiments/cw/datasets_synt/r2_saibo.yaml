@@ -1,0 +1,21 @@
+# @package _group_
+###
+### SYNTHETIC DATASET CONFIG
+### under cw/datasets_synt/
+###
+_target_: vggt.data.datasets.unified.UnifiedDataset
+dataset_prefix: "_r2_saibo"
+enable_invalid_area_loss: True
+is_g: True
+is_synt: True
+len_dataset: 194
+len_dataset_scale: 1.0
+max_depth: 256
+# max_percentile: 95
+max_interval: 16
+sample_by_index: True
+sequence_list_file: /home/jianyuan/src/omega/projects/vggt/data/valid_seqs/r2_saibo.txt
+step_range: 20
+UNIFIED_DIR: s3://dino/datasets/repligen/dec/shier_r2/
+
+# dynamic

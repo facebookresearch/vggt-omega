@@ -1,0 +1,18 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/mast/ablation17_multiscale_bilinear_dw_256_add_rope2d_perlevelnorm_dwpostconv
+  - _self_
+
+
+submitit:
+  name: "ab21"
+
+trainer:
+  model:
+    DEPTH_HEAD:
+      # Keep ab17 settings and disable positional embedding.
+      pos_embed_type: "none"
+
+

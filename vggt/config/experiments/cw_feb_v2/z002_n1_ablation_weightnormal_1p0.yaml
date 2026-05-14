@@ -1,0 +1,17 @@
+# @package _global_
+# Ablation: set depth/point weight_normal = 1.0
+
+defaults:
+  - /experiments/cw/z002_n1
+
+submitit:
+  name: "z002_n1_weightnormal_1p0"
+
+trainer:
+  loss:
+    depth:
+      weight_normal: 1.0
+    point:
+      weight_normal: 1.0
+
+

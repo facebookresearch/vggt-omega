@@ -1,0 +1,17 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/cw/understand/no_col_new_base
+  - _self_
+
+
+submitit:
+  name: "no_col_new_base_cam_depth_only"
+
+
+trainer:
+  model:
+    POINT_HEAD: null
+  loss:
+    preg: null

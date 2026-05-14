@@ -1,0 +1,14 @@
+# @package _global_
+# Ablation: enable GT variance weighting for both depth and point losses
+
+defaults:
+  - /experiments/cw/z002_n1
+
+trainer:
+  loss:
+    depth:
+      use_gt_var_weighting: True
+    point:
+      use_gt_var_weighting: True
+
+

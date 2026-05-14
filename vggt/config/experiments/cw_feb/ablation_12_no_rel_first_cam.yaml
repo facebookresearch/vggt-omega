@@ -1,0 +1,13 @@
+# @package _global_
+# Ablation 12: rel_to_first_cam: False
+
+defaults:
+  - /experiments/cw/reproduce_pi3
+
+submitit:
+  name: "ablation_12_no_rel_first_cam"
+
+trainer:
+  loss:
+    rel_to_first_cam: False
+

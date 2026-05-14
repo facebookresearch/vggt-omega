@@ -1,0 +1,13 @@
+# @package _global_
+# Ablation: conf min value = 0.1 (softplus_0.1_5)
+
+defaults:
+  - /experiments/cw/y005_n1_conf
+
+trainer:
+  model:
+    DEPTH_HEAD:
+      conf_activation: "softplus_0.1_5"
+    POINT_HEAD:
+      conf_activation: "softplus_0.1_5"
+

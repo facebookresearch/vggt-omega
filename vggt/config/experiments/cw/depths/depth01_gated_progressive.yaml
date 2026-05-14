@@ -1,0 +1,26 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/cw/depth00
+  - _self_
+
+
+submitit:
+  name: "gated_progressive_base"
+  account: "fair_amaia_cw_explore"
+  qos: "explore"
+
+
+trainer:
+  model:
+    patch_embed_out_indices: [4]
+    DEPTH_HEAD:
+      _target_: vggt.models.heads.linear_variants.vgglinearhead_v2.VGGLinearHeadV2
+      fusion_mode: "gated_progressive"
+      intermediate_layer_idx: [4, 13, 23]
+      use_patch_embed_intermediate: True
+      patch_embed_dim: 1024
+      patch_embed_out_channels: 256
+      multiscale_out_channels: [256, 256, 256]
+

@@ -1,0 +1,16 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/mast/z004_freeze_agg
+  - _self_
+
+
+submitit:
+  name: "z004_freeze_patch_embed"
+
+
+trainer:
+  optim:
+    frozen_module_names:
+      - "*patch_embed*"

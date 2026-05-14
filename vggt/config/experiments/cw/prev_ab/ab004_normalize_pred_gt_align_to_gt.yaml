@@ -1,0 +1,21 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/cw/ab004_base
+  - _self_
+
+
+submitit:
+  account: "fair_amaia_cw_scale"
+  qos: "scale"
+
+
+trainer:
+  loss:
+    normalize_predictions: True
+    normalization_type: "global"
+    normalize_gt: "global"
+    mean_type: "geometric"
+    align_pred_to_gt: True
+

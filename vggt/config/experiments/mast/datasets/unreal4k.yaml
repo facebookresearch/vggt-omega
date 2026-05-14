@@ -1,0 +1,20 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: /checkpoint/repligen/jianyuan/data/unreal4k/
+dataset_prefix: "_unreal4k"
+step_range: 8
+max_depth: 256
+enable_invalid_area_loss: True
+len_dataset: 56
+jump_prob: -1
+sample_by_index: True
+sequence_list_file: /mnt/coreai_3d/tree/jianyuan/valid_seqs/unreal4k.txt
+
+len_dataset_scale: 1.0
+
+is_synt: True
+
+max_interval: 12
+max_interval_ratio: 0.2
+
+

@@ -1,0 +1,20 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/cw/depth01_gated_progressive
+  - _self_
+
+
+submitit:
+  name: "gp_rcu_gn_two_stage"
+  account: "fair_amaia_cw_scale"
+  qos: "scale"
+
+
+trainer:
+  model:
+    DEPTH_HEAD:
+      gated_progressive_rcu_use_group_norm: True
+      gated_progressive_two_stage_upsample: True
+

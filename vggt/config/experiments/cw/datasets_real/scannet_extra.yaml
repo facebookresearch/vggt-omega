@@ -1,0 +1,27 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: s3://dino/datasets/repligen/unified/scannet_extra/
+dataset_prefix: "_scannet_extra"
+step_range: 256
+max_depth: 12
+len_dataset: 100
+mask_path: "depth_masks"
+human_mask_path: "human"
+sky_mask_path: "moge_mask"
+sample_by_index: True
+sequence_list_file: /home/jianyuan/src/omega/projects/vggt/data/valid_seqs/scannet_extra_clean_v1.txt
+
+len_dataset_scale: 0.1
+
+edge_rtol_thres: 0.05
+
+is_synt: false
+is_g: False
+
+
+# Apr13 tower: max_percentile: 98
+
+
+disable_depth_loss: True
+
+

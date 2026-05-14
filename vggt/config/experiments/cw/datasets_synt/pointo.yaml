@@ -1,0 +1,18 @@
+# @package _group_
+###
+### SYNTHETIC DATASET CONFIG
+### under cw/datasets_synt/
+###
+_target_: vggt.data.datasets.unified.UnifiedDataset
+dataset_prefix: "_pointo"
+is_synt: True
+len_dataset: 159
+len_dataset_scale: 1.0
+max_depth: 128
+sample_by_index: True
+# sky_mask_path: "moge_mask"
+sequence_list_file: /home/jianyuan/src/omega/projects/vggt/data/valid_seqs/pointo.txt
+step_range: 64
+UNIFIED_DIR: s3://dino/datasets/repligen/unified/debug/
+
+# dynamic

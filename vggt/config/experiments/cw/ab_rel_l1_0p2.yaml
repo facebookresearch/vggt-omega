@@ -1,0 +1,20 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/cw/ab_base
+  - _self_
+
+
+submitit:
+  name: "ab_rel_l1_0p2"
+
+
+trainer:
+  loss:
+    depth:
+      rel_l1_loss_ratio: 0.2
+    point:
+      rel_l1_loss_ratio: 0.2
+    preg:
+      rel_l1_loss_ratio: 0.2

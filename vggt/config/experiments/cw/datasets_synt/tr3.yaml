@@ -1,0 +1,21 @@
+# @package _group_
+###
+### SYNTHETIC DATASET CONFIG
+### under cw/datasets_synt/
+###
+_target_: vggt.data.datasets.unified.UnifiedDataset
+dataset_prefix: "_tr3"
+enable_invalid_area_loss: True
+is_g: True
+is_synt: True
+len_dataset: 199
+len_dataset_scale: 1.5
+max_depth: 32
+max_percentile: 80
+max_interval: 100
+max_interval_ratio: 0.2
+sequence_list_file: /home/jianyuan/src/omega/projects/vggt/data/valid_seqs/tr3.txt
+step_range: 100
+UNIFIED_DIR: s3://dino/datasets/repligen/dec/tr3/
+
+# dynamic

@@ -1,0 +1,15 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: /checkpoint/repligen/jianyuan/data/sstk_593k_v2/
+dataset_prefix: "_sstk_593k_v2"
+step_range: 64
+max_depth: 16
+len_dataset: 1136
+max_interval: 64
+sample_by_index: True
+sequence_list_file: /mnt/coreai_3d/tree/jianyuan/valid_seqs/sstk_593k_v2.txt
+
+
+len_dataset_scale: 0.25
+
+is_synt: True

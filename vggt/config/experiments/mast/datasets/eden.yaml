@@ -1,0 +1,11 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: /checkpoint/repligen/jianyuan/data/eden/
+dataset_prefix: "_eden"
+step_range: 50
+jump_prob: 0.5
+len_dataset: 177
+
+len_dataset_scale: 1.2
+
+is_synt: True

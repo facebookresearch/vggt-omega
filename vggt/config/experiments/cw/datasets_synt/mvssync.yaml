@@ -1,0 +1,20 @@
+# @package _group_
+###
+### SYNTHETIC DATASET CONFIG
+### under cw/datasets_synt/
+###
+_target_: vggt.data.datasets.unified.UnifiedDataset
+dataset_prefix: "_mvssync"
+is_g: False
+is_synt: True
+len_dataset: 105
+len_dataset_scale: 1.0
+max_depth: 128
+# Apr13 tower: max_percentile: 95
+max_interval: 128
+max_interval_ratio: 0.2
+sample_by_index: True
+step_range: 128
+UNIFIED_DIR: s3://dino/datasets/repligen/unified/mvssync/
+
+# dynamic

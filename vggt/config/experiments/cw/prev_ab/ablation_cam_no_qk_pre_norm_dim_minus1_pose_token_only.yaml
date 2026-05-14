@@ -1,0 +1,20 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/cw/ablation_cam
+  - _self_
+
+
+submitit:
+  name: "ablation_cam_no_qk_pre_norm_dim_minus1_pose_token_only"
+
+
+trainer:
+  model:
+    CAMERA_HEAD:
+      extra_attention_use_qk_norm: False
+      extra_attention_pre_norm: True
+      extra_attention_dim: -1
+      extra_attention_use_all_special_tokens: False
+

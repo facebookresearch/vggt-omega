@@ -1,0 +1,13 @@
+# @package _global_
+# Ablation: use harmonic mean for scale estimation (down-weights far-away points)
+
+defaults:
+  - /experiments/cw/y002
+
+submitit:
+  name: "y002_harmonic_mean"
+
+trainer:
+  loss:
+    mean_type: "harmonic"
+

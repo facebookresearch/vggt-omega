@@ -1,0 +1,14 @@
+# @package _global_
+# Ablation v2-04: betas [0.9, 0.99] instead of [0.9, 0.95]
+
+defaults:
+  - /experiments/cw/reproduce_pi3_v2
+
+submitit:
+  name: "ab04"
+
+trainer:
+  optim:
+    optimizer:
+      betas: [0.9, 0.99]
+

@@ -1,0 +1,14 @@
+# @package _global_
+# Ablation 7: DEPTH_HEAD extra_attention_depth: 0
+
+defaults:
+  - /experiments/cw/reproduce_pi3
+
+submitit:
+  name: "ablation_07_no_extra_attn"
+
+trainer:
+  model:
+    DEPTH_HEAD:
+      extra_attention_depth: 0
+

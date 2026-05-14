@@ -1,0 +1,15 @@
+# @package _global_
+# Ablation: Minimal warmup (0.1% instead of 2%) + img_nums [2, 3]
+
+defaults:
+  - /experiments/cw/t6_ab_no_warmup
+
+submitit:
+  name: "t6_ab_no_warmup_img23"
+
+trainer:
+  data:
+    train:
+      common_config:
+        img_nums: [2, 3]
+

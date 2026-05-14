@@ -1,0 +1,17 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/cw/ab_base
+  - _self_
+
+
+submitit:
+  name: "ab_no_point_head"
+
+
+trainer:
+  model:
+    POINT_HEAD: null
+  loss:
+    preg: null

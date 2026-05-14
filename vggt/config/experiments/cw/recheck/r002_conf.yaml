@@ -1,0 +1,64 @@
+# @package _global_
+#
+
+# Enable confidence heads/losses on top of r001, while initializing
+# depth/point heads directly from w003_t4.
+
+defaults:
+  - /experiments/cw/recheck/r001
+
+submitit:
+  name: "r002_conf"
+
+trainer:
+  model:
+    DEPTH_HEAD:
+      disable_conf: False
+
+    POINT_HEAD:
+      disable_conf: False
+
+  checkpoint:
+    model_weight_initializer:
+      state_dict:
+        checkpoints:
+          - checkpoint_path: /checkpoint/amaia/scale/jianyuan/vggt/config/experiments/cw_apr/restart_r256_include_patience_match_t12.yaml/0/checkpoints/checkpoint.pt
+            ckpt_state_dict_keys:
+              - model
+            checkpoint_kernels:
+              - _target_: omnivision.model.checkpoint_utils.CkptExcludeKernel
+                key_pattern:
+                  - "*depth_head*"
+                  - "*point_head*"
+          - checkpoint_path: /checkpoint/amaia/scale/jianyuan/vggt/config/experiments/cw/w003_t4.yaml/0/checkpoints/checkpoint.pt
+            ckpt_state_dict_keys:
+              - model
+            checkpoint_kernels:
+              - _target_: omnivision.model.checkpoint_utils.CkptIncludeKernel
+                key_pattern:
+                  - "*depth_head*"
+                  - "*point_head*"
+
+  loss:
+    depth:
+      use_conf_loss: True
+      separate_reg_loss_weight: 2.0
+      valid_range: 0.99
+      gradient_loss_config:
+        - type: "normal_pi"
+          scales: 2
+          min_valid_samples: 10
+          weight: 0.1
+        - type: "grad"
+          scales: 4
+          weight: 1.0
+
+    preg:
+      use_conf_loss: True
+      separate_reg_loss_weight: 2.0
+      valid_range: 0.99
+      gradient_loss_config:
+        - type: "normal_pi"
+          scales: 3
+          min_valid_samples: 10
+          weight: 0.1

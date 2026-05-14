@@ -1,0 +1,18 @@
+# @package _global_
+#
+# Add only se_col on top of r001 and scale it to about 30% of train sampling.
+
+defaults:
+  - /experiments/cw/recheck/r001
+  - /experiments/cw/datasets_real/se_col@trainer.data.train.dataset.dataset_configs.se_col
+
+submitit:
+  name: "r011_se_col"
+
+trainer:
+  data:
+    train:
+      dataset:
+        dataset_configs:
+          se_col:
+            len_dataset_scale: 2.126

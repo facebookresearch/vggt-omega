@@ -1,0 +1,21 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: /checkpoint/repligen/jianyuan/data/tr2/
+dataset_prefix: "_tr2"
+step_range: 256
+max_depth: 256
+len_dataset: 164
+max_interval: 128
+enable_invalid_area_loss: True
+# sample_by_index: True
+sequence_list_file: /mnt/coreai_3d/tree/jianyuan/valid_seqs/tr2.txt
+
+disable_depth_loss: True
+
+len_dataset_scale: 1.0
+max_interval_ratio: 0.2
+
+is_synt: True
+is_g: True
+
+# dynamic

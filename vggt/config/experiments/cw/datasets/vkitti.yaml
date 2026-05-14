@@ -1,0 +1,18 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: s3://dino/datasets/repligen/unified/vkitti/
+dataset_prefix: "_vkitti"
+step_range: 128
+max_depth: 80
+# enable_invalid_area_loss: True
+len_dataset: 100
+max_interval: 64
+
+len_dataset_scale: 1.0
+
+max_interval_ratio: 0.1
+
+is_synt: True
+
+
+# dynamic

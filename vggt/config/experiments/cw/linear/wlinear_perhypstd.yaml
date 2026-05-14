@@ -1,0 +1,11 @@
+# @package _global_
+
+defaults:
+  - /experiments/cw/linear/wlinear
+
+trainer:
+  model:
+    DEPTH_HEAD:
+      predict_per_component_variance: False
+      share_variance_across_hypotheses: False
+

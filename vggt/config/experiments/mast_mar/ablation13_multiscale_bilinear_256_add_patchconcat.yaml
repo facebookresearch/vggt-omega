@@ -1,0 +1,21 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/mast/ablation09_multiscale_bilinear_256_add
+  - _self_
+
+
+submitit:
+  name: "ab13"
+
+trainer:
+  model:
+    # Request DINO patch-embed intermediate from the 11th block (0-based index 10).
+    patch_embed_out_indices: [11]
+    DEPTH_HEAD:
+      # Fuse early patch-embed tokens to inject more local texture cues.
+      use_patch_embed_intermediate: True
+      patch_embed_dim: 1024
+      patch_embed_out_channels: 128
+      patch_embed_merge_type: "concat"

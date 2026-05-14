@@ -1,0 +1,14 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: /checkpoint/repligen/jianyuan/data/se_v2/
+dataset_prefix: "_se"
+step_range: 64
+max_depth: 128
+len_dataset: 552
+sample_by_index: True
+max_interval: 64  
+sequence_list_file: /mnt/coreai_3d/tree/jianyuan/valid_seqs/se.txt
+disable_depth_loss: True  
+len_dataset_scale: 0.025
+
+is_synt: false

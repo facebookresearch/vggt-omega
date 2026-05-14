@@ -1,0 +1,28 @@
+# @package _global_
+#
+# Series D: syndrone, cool, tartanground, bus.
+# Add the whole series on top of r001 and scale it to about 30% of train sampling.
+
+defaults:
+  - /experiments/cw/recheck/r001
+  - /experiments/cw/datasets_synt/syndrone@trainer.data.train.dataset.dataset_configs.syndrone
+  - /experiments/cw/datasets_synt/cool@trainer.data.train.dataset.dataset_configs.cool
+  - /experiments/cw/datasets_synt/tartanground@trainer.data.train.dataset.dataset_configs.tartanground
+  - /experiments/cw/datasets_synt/bus@trainer.data.train.dataset.dataset_configs.bus
+
+submitit:
+  name: "r018_series_d"
+
+trainer:
+  data:
+    train:
+      dataset:
+        dataset_configs:
+          syndrone:
+            len_dataset_scale: 1.27345
+          cool:
+            len_dataset_scale: 3.183625
+          tartanground:
+            len_dataset_scale: 4.7754375
+          bus:
+            len_dataset_scale: 2.5469

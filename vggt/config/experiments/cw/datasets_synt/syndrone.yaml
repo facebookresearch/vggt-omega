@@ -1,0 +1,17 @@
+# @package _group_
+###
+### SYNTHETIC DATASET CONFIG
+### under cw/datasets_synt/
+###
+_target_: vggt.data.datasets.unified.UnifiedDataset
+dataset_prefix: "_syndrone"
+is_synt: True
+len_dataset: 66 
+len_dataset_scale: 0.5
+max_depth: 128
+max_interval: 64
+max_interval_ratio: 0.1
+sample_by_index: True
+sequence_list_file: /home/jianyuan/src/omega/projects/vggt/data/valid_seqs/syndrone.txt
+step_range: 64
+UNIFIED_DIR: s3://dino/datasets/repligen/dec/syndrone/

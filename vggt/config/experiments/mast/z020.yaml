@@ -1,0 +1,79 @@
+# @package _global_
+#
+
+defaults:
+  - /experiments/mast/z019
+  - _self_
+
+
+submitit:
+  name: "z020"
+
+
+trainer:
+  data:
+    train:
+      dataset:
+        dataset_configs:
+          atom:
+            step_range: 256
+            max_interval: 192
+          blendmvs:
+            step_range: 52
+          collected_saibo:
+            step_range: 80
+            max_interval: 76
+          crys:
+            step_range: 92
+            max_interval: 76
+          crys48:
+            step_range: 76
+            max_interval: 76
+          hor:
+            step_range: 88
+            max_interval: 72
+          hor02:
+            step_range: 140
+            max_interval: 72
+          hor28:
+            step_range: 140
+            max_interval: 72
+          hypersim:
+            step_range: 112
+          megadepth:
+            step_range: 132
+          midair:
+            step_range: 130
+            max_interval: 130
+          r2_b1:
+            step_range: 28
+            max_interval: 28
+          r2_crys:
+            step_range: 160
+            max_interval: 96
+          r2_mv:
+            step_range: 160
+            max_interval: 112
+          r2_saibo:
+            step_range: 60
+            max_interval: 58
+          saibo28:
+            step_range: 58
+            max_interval: 58
+          syndrone:
+            step_range: 96
+            max_interval: 96
+          tartanair:
+            step_range: 20
+            max_interval: 24
+          tartanground:
+            step_range: 56
+            max_interval: 56
+          taskonomy:
+            step_range: 40
+          unreal4k:
+            step_range: 7
+            max_interval: 9
+          vkitti:
+            step_range: 144
+            max_interval: 72

@@ -1,0 +1,22 @@
+# @package _global_
+#
+# Series F: r2_behavior1k, rlbench.
+# Add the whole series on top of r001 and scale it to about 30% of train sampling.
+
+defaults:
+  - /experiments/cw/recheck/r001
+  - /experiments/cw/datasets_synt/r2_behavior1k@trainer.data.train.dataset.dataset_configs.r2_behavior1k
+  - /experiments/cw/datasets_synt/rlbench@trainer.data.train.dataset.dataset_configs.rlbench
+
+submitit:
+  name: "r020_series_f"
+
+trainer:
+  data:
+    train:
+      dataset:
+        dataset_configs:
+          r2_behavior1k:
+            len_dataset_scale: 12.8206
+          rlbench:
+            len_dataset_scale: 6.4103

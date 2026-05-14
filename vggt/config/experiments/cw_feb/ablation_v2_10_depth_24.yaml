@@ -1,0 +1,14 @@
+# @package _global_
+# Ablation v2-10: AGGREGATOR depth: 24
+
+defaults:
+  - /experiments/cw/reproduce_pi3_v2
+
+submitit:
+  name: "ab10"
+
+trainer:
+  model:
+    AGGREGATOR:
+      depth: 24
+

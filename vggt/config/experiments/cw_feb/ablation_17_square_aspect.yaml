@@ -1,0 +1,16 @@
+# @package _global_
+# Ablation 17: aspects: [1.0, 1.0]
+
+defaults:
+  - /experiments/cw/reproduce_pi3
+
+submitit:
+  name: "ablation_17_square_aspect"
+
+trainer:
+  data:
+    train:
+      common_config:
+        augs:
+          aspects: [1.0, 1.0]
+

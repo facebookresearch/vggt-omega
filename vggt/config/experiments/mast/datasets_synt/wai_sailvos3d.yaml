@@ -1,0 +1,25 @@
+# @package _group_
+###
+### SYNTHETIC DATASET CONFIG
+### under cw/datasets_synt/
+###
+_target_: vggt.data.datasets.unified.UnifiedDataset
+dataset_prefix: "_wai_sailvos3d"
+is_synt: True
+len_dataset: 116
+len_dataset_scale: 0.8
+max_depth: 256
+max_interval: 16
+sample_by_index: True
+step_range: 24
+UNIFIED_DIR: /checkpoint/repligen/jianyuan/data/wai_sailvos3d/
+sequence_list_file: /mnt/coreai_3d/tree/jianyuan/valid_seqs_apr/wai_sailvos3d.txt
+
+# dynamic
+
+
+
+
+disable_depth_loss: True
+
+

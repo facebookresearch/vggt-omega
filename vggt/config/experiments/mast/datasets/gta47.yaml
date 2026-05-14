@@ -1,0 +1,20 @@
+# @package _group_
+_target_: vggt.data.datasets.unified.UnifiedDataset
+UNIFIED_DIR: /checkpoint/repligen/jianyuan/data/shier_v1/47_gta/
+dataset_prefix: "_gta47"
+step_range: 256
+max_depth: 256
+enable_invalid_area_loss: True
+len_dataset: 82
+max_interval: 128
+sample_by_index: True
+sequence_list_file: /mnt/coreai_3d/tree/jianyuan/valid_seqs/47_gta.txt
+
+len_dataset_scale: 1.0
+
+disable_depth_loss: True
+
+is_synt: True
+
+
+# dynamic
