@@ -39,7 +39,7 @@ class VGGTOmega(nn.Module):
             raise ValueError("Aggregator did not cache the final layer, which VGGTOmega needs.")
 
         predictions = {
-            "registers": final_tokens[:, :, 1:patch_token_start],
+            "camera_and_register_tokens": final_tokens[:, :, :patch_token_start].contiguous(),
         }
         with torch.autocast(device_type="cuda", enabled=False):
             if self.camera_head is not None:

@@ -414,16 +414,18 @@ Verification:
   - 256 text-alignment checkpoint: `pose_enc`, `depth`, `depth_conf`,
     `text_alignment_embedding`, `text_alignment_token`
 
-## Register Outputs: Pass 1
+## Camera/Register Token Outputs: Pass 1
 
-Status: model now exposes the final-layer register tokens.
+Status: model now exposes the final-layer camera token and register tokens.
 
-`VGGTOmega.forward()` returns `predictions["registers"]`, sliced from the final
-aggregator output after the camera token and before patch tokens:
+`VGGTOmega.forward()` returns `predictions["camera_and_register_tokens"]`,
+sliced from the final aggregator output before patch tokens:
 
-- shape: `[B, S, 16, 2048]`
-- source: `aggregated_tokens_list[-1][:, :, 1:patch_token_start]`
-- excludes the camera token
+- shape: `[B, S, 17, 2048]`
+- source: `aggregated_tokens_list[-1][:, :, :patch_token_start]`
+- token `0` is the camera token
+- tokens `1:17` are the registers / scene tokens
+- the slice is made contiguous so it does not keep the patch-token storage alive
 - does not change camera, depth, or text-alignment computation
 
 ## Open Cleanup Items
