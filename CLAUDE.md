@@ -99,10 +99,9 @@ simple, readable, and easy for researchers to modify.
 
 - Default inference should run the backbone and aggregator under AMP with
   bfloat16 on CUDA when supported, falling back to float16 otherwise.
-- Heads should run in float32 by disabling autocast around camera/depth heads.
-  This matches the training setup for the z028 checkpoint: global AMP is enabled
-  with bfloat16 by default, while `enable_head_amp=False` and head-level
-  `disable_last_layer_amp=True` keep the heads in fp32.
+- Heads should run in float32 by disabling autocast around camera/depth/alignment
+  heads. This matches the training setup for the z028 checkpoint: global AMP is
+  enabled with bfloat16 by default, while the heads are kept in fp32.
 - Keep this policy explicit in the model forward path rather than hiding it
   behind environment variables.
 
@@ -134,6 +133,10 @@ simple, readable, and easy for researchers to modify.
 - For behavior-preserving refactors, compare release outputs against the dirty
   training-code model on fixed inputs. Bitwise equality is preferred when the
   precision policy and inputs are identical.
+- Do not run expensive checkpoint forward comparisons by default for small
+  cleanup edits. Use compile/static checks first, and run checkpoint comparisons
+  when explicitly requested or when the change could plausibly affect numerical
+  behavior.
 
 ## DINOv3-Derived Code
 

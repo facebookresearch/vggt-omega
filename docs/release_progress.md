@@ -130,10 +130,9 @@ training, config compatibility, or unused head variants:
   enabled=False)`.
 
 The pass intentionally kept checkpoint-architecture choices such as
-`global_attn_mode`, `global_attn_indices`, `use_dino_clsreg`, `proj_type`, and
-RoPE-related options. These affect possible checkpoint layouts or computation
-paths, so they should only be removed after checking all checkpoints intended
-for release.
+`global_attn_mode`, `global_attn_indices`, `use_dino_clsreg`, and RoPE-related
+options. These affect possible checkpoint layouts or computation paths, so they
+should only be removed after checking all checkpoints intended for release.
 
 ## Model Entry Cleanup: Pass 1
 
@@ -161,6 +160,24 @@ The file still keeps release-specific helpers for checkpoint loading,
 backbone/aggregator autocast, head fp32 execution, and RoPE behavior warnings.
 These replace the public VGGT `PyTorchModelHubMixin` path and preserve the
 training-time precision behavior.
+
+## Head Cleanup: Pass 2
+
+Status: complete for the first simplified release shape.
+
+The camera, depth, and text-alignment heads now expose only the small set of
+release-facing constructor arguments needed by `VGGTOmega`. Training and
+exploration switches were removed from the public code path, while module names
+with checkpoint weights were preserved.
+
+- `CameraHeadLinear` now returns `pose_enc` directly instead of a one-element
+  `pose_enc_list`.
+- `DPTLinearHead` now hardcodes the released depth/confidence behavior:
+  positional embedding on, linear prediction projections, depth `exp`, and
+  confidence `1 + exp`.
+- `TextAlignmentHead` now contains only the released student branch.
+- `vggt_omega.models.heads.head_act` was removed because the remaining head
+  activations are fixed and local.
 
 ## Text Alignment Checkpoint: Pass 1
 

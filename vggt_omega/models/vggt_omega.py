@@ -25,10 +25,9 @@ class VGGTOmega(nn.Module):
         super().__init__()
 
         self.patch_embed = _build_patch_embed(patch_size=patch_size, embed_dim=embed_dim)
-        _warn_if_rope_not_max("patch_embed", self.patch_embed.rope_embed)
         self.aggregator = Aggregator(patch_size=patch_size, embed_dim=embed_dim)
-        _warn_if_rope_not_max("aggregator", self.aggregator.rope_embed)
-        self.camera_head = CameraHeadLinear(dim_in=2 * embed_dim, patch_size=patch_size) if enable_camera else None
+        _warn_if_rope_not_max(self.patch_embed, self.aggregator)
+        self.camera_head = CameraHeadLinear(dim_in=2 * embed_dim) if enable_camera else None
         self.depth_head = DPTLinearHead(dim_in=2 * embed_dim, patch_size=patch_size) if enable_depth else None
         self.alignment_head = TextAlignmentHead(dim_in=2 * embed_dim) if enable_alignment else None
 
@@ -75,13 +74,10 @@ class VGGTOmega(nn.Module):
         head_context = torch.autocast(device_type="cuda", enabled=False) if images.is_cuda else contextlib.nullcontext()
         with head_context:
             if self.camera_head is not None:
-                pose_enc_list = self.camera_head(
+                predictions["pose_enc"] = self.camera_head(
                     aggregated_tokens_list,
-                    images=images,
                     patch_start_idx=patch_start_idx,
                 )
-                predictions["pose_enc"] = pose_enc_list[-1]
-                predictions["pose_enc_list"] = pose_enc_list
 
             if self.depth_head is not None:
                 depth, depth_conf = self.depth_head(
@@ -96,7 +92,6 @@ class VGGTOmega(nn.Module):
                 predictions.update(
                     self.alignment_head(
                         aggregated_tokens_list,
-                        images=images,
                         patch_start_idx=patch_start_idx,
                     )
                 )
@@ -142,11 +137,13 @@ def _checkpoint_state_dict(checkpoint: Any) -> dict[str, torch.Tensor]:
     raise TypeError(f"Unsupported checkpoint type: {type(checkpoint)!r}")
 
 
-def _warn_if_rope_not_max(name: str, rope_embed: Any) -> None:
-    normalize_coords = getattr(rope_embed, "normalize_coords", None)
-    if normalize_coords != "max":
-        warnings.warn(
-            f"{name} RoPE normalize_coords is {normalize_coords!r}; "
-            "the released VGGT-Omega checkpoint was trained with 'max'.",
-            stacklevel=2,
-        )
+def _warn_if_rope_not_max(patch_embed: nn.Module, aggregator: nn.Module) -> None:
+    for name, module in (("patch_embed", patch_embed), ("aggregator", aggregator)):
+        rope_embed = getattr(module, "rope_embed", None)
+        normalize_coords = getattr(rope_embed, "normalize_coords", None)
+        if normalize_coords != "max":
+            warnings.warn(
+                f"{name} RoPE normalize_coords is {normalize_coords!r}; "
+                "the released VGGT-Omega checkpoint was trained with 'max'.",
+                stacklevel=2,
+            )
