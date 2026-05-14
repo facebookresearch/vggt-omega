@@ -222,19 +222,11 @@ def compute_camera_faces(cone_shape: trimesh.Trimesh) -> np.ndarray:
 
 
 def apply_sky_mask(conf: np.ndarray, target_dir: str) -> np.ndarray:
-    import onnxruntime
-
     image_dir = os.path.join(target_dir, "images")
     image_names = sorted(os.listdir(image_dir))
     height, width = conf.shape[-2:]
     masks = []
     skyseg_session = None
-
-    if not os.path.exists("skyseg.onnx"):
-        download_file_from_url(
-            "https://huggingface.co/JianyuanWang/skyseg/resolve/main/skyseg.onnx",
-            "skyseg.onnx",
-        )
 
     for image_name in image_names:
         image_path = os.path.join(image_dir, image_name)
@@ -242,7 +234,14 @@ def apply_sky_mask(conf: np.ndarray, target_dir: str) -> np.ndarray:
         if os.path.exists(mask_path):
             sky_mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
         else:
+            if not os.path.exists("skyseg.onnx"):
+                download_file_from_url(
+                    "https://huggingface.co/JianyuanWang/skyseg/resolve/main/skyseg.onnx",
+                    "skyseg.onnx",
+                )
             if skyseg_session is None:
+                import onnxruntime
+
                 skyseg_session = onnxruntime.InferenceSession("skyseg.onnx")
             sky_mask = segment_sky(image_path, skyseg_session, mask_path)
 
