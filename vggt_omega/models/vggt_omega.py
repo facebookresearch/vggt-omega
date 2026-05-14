@@ -1,29 +1,10 @@
 import warnings
-from pathlib import Path
-from typing import Any
 
 import torch
 import torch.nn as nn
 
 from vggt_omega.models.aggregator import Aggregator
 from vggt_omega.models.heads import CameraHead, DenseHead, TextAlignmentHead
-
-
-checkpoint_key_renames = [
-    ("patch_embed.", "aggregator.patch_embed."),
-    ("aggregator.global_blocks.", "aggregator.inter_frame_blocks."),
-    ("depth_head.", "dense_head."),
-    ("camera_head.extra_attention_pre_norm.", "camera_head.token_norm."),
-    ("camera_head.extra_attention_blocks.", "camera_head.trunk."),
-    ("camera_head.token_norm.", "camera_head.trunk_norm."),
-    ("camera_head.pose_branch.", "camera_head.camera_branch."),
-    ("alignment_head.student.pre_norm.", "text_alignment_head.token_norm."),
-    ("alignment_head.student.extra_attention_blocks.", "text_alignment_head.readout_blocks."),
-    ("alignment_head.student.sequence_token", "text_alignment_head.language_token"),
-    ("alignment_head.student.token_norm.", "text_alignment_head.language_token_norm."),
-    ("alignment_head.student.projector.", "text_alignment_head.embedding_projector."),
-    ("alignment_head.", "text_alignment_head."),
-]
 
 
 class VGGTOmega(nn.Module):
@@ -45,34 +26,9 @@ class VGGTOmega(nn.Module):
         self.dense_head = DenseHead(dim_in=2 * embed_dim, patch_size=patch_size) if enable_depth else None
         self.text_alignment_head = TextAlignmentHead(dim_in=2 * embed_dim) if enable_alignment else None
 
-    @classmethod
-    def from_checkpoint(
-        cls,
-        checkpoint_path: str | Path,
-        *,
-        map_location: str | torch.device = "cpu",
-        strict: bool = True,
-        enable_alignment: bool | None = None,
-        **kwargs: Any,
-    ) -> "VGGTOmega":
-        checkpoint = torch.load(checkpoint_path, map_location=map_location, weights_only=False)
-        state_dict = rename_state_dict_keys(_checkpoint_state_dict(checkpoint), checkpoint_key_renames)
-        if enable_alignment is None:
-            enable_alignment = any(key.startswith("text_alignment_head.") for key in state_dict)
-        model = cls(enable_alignment=enable_alignment, **kwargs)
-        model.load_state_dict(state_dict, strict=strict)
-        return model
-
-    def forward(self, images: torch.Tensor | dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
-        if isinstance(images, dict):
-            images = images["images"]
-
+    def forward(self, images: torch.Tensor) -> dict[str, torch.Tensor]:
         if len(images.shape) == 4:
             images = images.unsqueeze(0)
-        if len(images.shape) != 5:
-            raise ValueError(f"Expected images with shape [S,3,H,W] or [B,S,3,H,W], got {tuple(images.shape)}")
-        if images.shape[2] != 3:
-            raise ValueError(f"Expected RGB images with 3 channels, got {images.shape[2]}")
 
         amp_dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
         with torch.autocast(device_type="cuda", dtype=amp_dtype):
@@ -106,33 +62,6 @@ class VGGTOmega(nn.Module):
         if not self.training:
             predictions["images"] = images
         return predictions
-
-
-def _checkpoint_state_dict(checkpoint: Any) -> dict[str, torch.Tensor]:
-    if isinstance(checkpoint, dict) and "model" in checkpoint:
-        return checkpoint["model"]
-    if isinstance(checkpoint, dict) and "state_dict" in checkpoint:
-        return checkpoint["state_dict"]
-    if isinstance(checkpoint, dict):
-        return checkpoint
-    raise TypeError(f"Unsupported checkpoint type: {type(checkpoint)!r}")
-
-
-def rename_state_dict_keys(
-    state_dict: dict[str, torch.Tensor],
-    rules: list[tuple[str, str]],
-) -> dict[str, torch.Tensor]:
-    renamed = {}
-    for key, value in state_dict.items():
-        new_key = key
-        for old_prefix, new_prefix in rules:
-            if key.startswith(old_prefix):
-                new_key = new_prefix + key[len(old_prefix) :]
-                break
-        if new_key in renamed:
-            raise ValueError(f"Checkpoint key rename collision: {key!r} maps to existing key {new_key!r}")
-        renamed[new_key] = value
-    return renamed
 
 
 def _warn_if_rope_not_max(aggregator: nn.Module) -> None:

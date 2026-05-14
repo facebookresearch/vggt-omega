@@ -385,6 +385,35 @@ on a fixed input:
 Eight example frames have been extracted into `examples/` for future
 training-vs-release comparison tests.
 
+## Release Checkpoints: Pass 1
+
+Status: complete for the first public-style checkpoint export.
+
+The two release checkpoints are now saved as raw `state_dict` files, matching
+the public VGGT `model.pt` loading style. They are model-only files and no
+longer require checkpoint key mapping at load time:
+
+- 512-resolution reconstruction checkpoint:
+  `/home/jianyuan/ckpts/release/VGGT-Omega-1B-512/model.pt`
+- 256-resolution text-alignment checkpoint:
+  `/home/jianyuan/ckpts/release/VGGT-Omega-1B-256-Text-Alignment/model.pt`
+
+The intermediate exports are still available in
+`/home/jianyuan/ckpts/round_final/`, but the release-style folder layout above
+is the one to use going forward.
+
+Verification:
+
+- Both files strict-load directly with `model.load_state_dict(torch.load(path))`.
+- The 512 checkpoint contains 1411 tensors and 1,144,059,977 parameters.
+- The 256 text-alignment checkpoint contains 1482 tensors and 1,349,743,689
+  parameters.
+- Forward verification against the dirty-code reference outputs passed with max
+  abs diff 0 for all checked outputs:
+  - 512 checkpoint: `pose_enc`, `depth`, `depth_conf`
+  - 256 text-alignment checkpoint: `pose_enc`, `depth`, `depth_conf`,
+    `text_alignment_embedding`, `text_alignment_token`
+
 ## Open Cleanup Items
 
 - Continue simplifying files outside `layers/`, especially heads and utilities,
