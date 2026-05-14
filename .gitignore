@@ -11,6 +11,8 @@ dist/
 outputs/
 demo_outputs/
 checkpoints/
+skyseg.onnx
+skyseg.onnx.tmp
 *.pt
 *.pth
 *.safetensors

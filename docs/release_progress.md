@@ -555,7 +555,7 @@ Validation:
 - `python -m compileall -q demo_gradio.py visual_util.py`
 - AST parse check for both files
 - fake-prediction GLB export smoke test
-- import check for `demo_gradio.CHECKPOINT_URL`
+- CLI help check for the required `--checkpoint` argument
 - `git diff --check -- demo_gradio.py visual_util.py README.md requirements_demo.txt .gitignore`
 
 ## Gradio Demo: Pass 2
@@ -574,7 +574,8 @@ The demo UI now copies the public VGGT interface more closely:
 VGGT-Omega-specific constraints remain:
 
 - The UI still exposes no checkpoint selector.
-- The demo still defaults to the `VGGT-Omega-1B-512` reconstruction checkpoint.
+- The demo requires an explicit local `--checkpoint` path for the
+  `VGGT-Omega-1B-512` reconstruction checkpoint.
 - Public VGGT examples were not copied.
 - `predictions.npz` remains an internal cache for visualization updates and is
   not exposed as a download widget.

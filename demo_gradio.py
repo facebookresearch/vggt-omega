@@ -23,50 +23,26 @@ from vggt_omega.utils.load_fn import load_and_preprocess_images
 from vggt_omega.utils.pose_enc import pose_encoding_to_extri_intri
 
 
-CHECKPOINT_URL = "https://huggingface.co/facebook/VGGT-Omega-1B-512/resolve/main/model.pt"
-IMAGE_RESOLUTION = 512
-
-_MODEL_CACHE = {"checkpoint_path": None, "model": None}
-
-
 def load_model(checkpoint_path: str) -> VGGTOmega:
     if not torch.cuda.is_available():
         raise gr.Error("CUDA is required to run VGGT-Omega.")
-
-    checkpoint_path = (checkpoint_path or "").strip()
-    if _MODEL_CACHE["checkpoint_path"] == checkpoint_path and _MODEL_CACHE["model"] is not None:
-        return _MODEL_CACHE["model"]
-
-    if _MODEL_CACHE["model"] is not None:
-        del _MODEL_CACHE["model"]
-        _MODEL_CACHE["model"] = None
-        _MODEL_CACHE["checkpoint_path"] = None
-        gc.collect()
-        torch.cuda.empty_cache()
+    if not os.path.isfile(checkpoint_path):
+        raise FileNotFoundError(f"Checkpoint not found: {checkpoint_path}")
 
     model = VGGTOmega().eval()
-
-    if checkpoint_path:
-        state_dict = torch.load(checkpoint_path, map_location="cpu")
-    else:
-        state_dict = torch.hub.load_state_dict_from_url(CHECKPOINT_URL, map_location="cpu")
-
+    state_dict = torch.load(checkpoint_path, map_location="cpu")
     model.load_state_dict(state_dict)
-    model = model.to("cuda")
-    _MODEL_CACHE["checkpoint_path"] = checkpoint_path
-    _MODEL_CACHE["model"] = model
-    return model
+    return model.to("cuda")
 
 
-def run_model(target_dir: str, checkpoint_path: str) -> dict:
+def run_model(target_dir: str, model: VGGTOmega) -> dict:
     print(f"Processing images from {target_dir}")
-    model = load_model(checkpoint_path)
 
     image_names = sorted(glob.glob(os.path.join(target_dir, "images", "*")))
     if len(image_names) == 0:
         raise gr.Error("No images found. Please upload images or a video first.")
 
-    images = load_and_preprocess_images(image_names, image_resolution=IMAGE_RESOLUTION).to("cuda")
+    images = load_and_preprocess_images(image_names, image_resolution=512).to("cuda")
     print(f"Preprocessed images shape: {tuple(images.shape)}")
 
     with torch.inference_mode():
@@ -187,7 +163,7 @@ def update_gallery_on_upload(input_video, input_images, video_sample_fps):
 
 def gradio_demo(
     target_dir,
-    checkpoint_path,
+    model,
     conf_thres=20.0,
     mask_black_bg=False,
     mask_white_bg=False,
@@ -207,7 +183,7 @@ def gradio_demo(
     target_dir_images = os.path.join(target_dir, "images")
     all_files = sorted(os.listdir(target_dir_images))
 
-    predictions = run_model(target_dir, checkpoint_path)
+    predictions = run_model(target_dir, model)
     prediction_save_path = os.path.join(target_dir, "predictions.npz")
     np.savez(prediction_save_path, **predictions)
 
@@ -290,8 +266,8 @@ def update_visualization(
         max_points_k,
     )
     if not os.path.exists(glbfile):
-        loaded = np.load(predictions_path)
-        predictions = {key: np.array(loaded[key]) for key in loaded.files}
+        with np.load(predictions_path) as loaded:
+            predictions = {key: np.array(loaded[key]) for key in loaded.files}
         try:
             scene = predictions_to_glb(
                 predictions,
@@ -322,7 +298,27 @@ def update_visual_log():
     return "Updating visualization..."
 
 
-def build_ui(args):
+def build_ui(model: VGGTOmega):
+    def reconstruct(
+        target_dir,
+        conf_thres,
+        mask_black_bg,
+        mask_white_bg,
+        show_cam,
+        mask_sky,
+        max_points_k,
+    ):
+        return gradio_demo(
+            target_dir,
+            model,
+            conf_thres,
+            mask_black_bg,
+            mask_white_bg,
+            show_cam,
+            mask_sky,
+            max_points_k,
+        )
+
     theme = gr.themes.Ocean()
     theme.set(
         checkbox_label_background_fill_selected="*button_primary_background_fill",
@@ -373,7 +369,6 @@ def build_ui(args):
         )
 
         target_dir_output = gr.Textbox(label="Target Dir", visible=False, value="None")
-        checkpoint_path = gr.State(args.checkpoint or "")
 
         with gr.Row():
             with gr.Column(scale=2):
@@ -455,10 +450,9 @@ def build_ui(args):
             inputs=[],
             outputs=[log_output],
         ).then(
-            fn=gradio_demo,
+            fn=reconstruct,
             inputs=[
                 target_dir_output,
-                checkpoint_path,
                 conf_thres,
                 mask_black_bg,
                 mask_white_bg,
@@ -488,7 +482,7 @@ def build_ui(args):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="VGGT-Omega Gradio demo")
-    parser.add_argument("--checkpoint", default="", help="Optional local VGGT-Omega-1B-512 checkpoint path.")
+    parser.add_argument("--checkpoint", required=True, help="Local VGGT-Omega-1B-512 checkpoint path.")
     parser.add_argument("--server-name", default="0.0.0.0")
     parser.add_argument("--server-port", type=int, default=7860)
     parser.add_argument("--share", action="store_true")
@@ -497,7 +491,9 @@ def parse_args():
 
 def main():
     args = parse_args()
-    demo = build_ui(args)
+    print(f"Loading checkpoint from {args.checkpoint}")
+    model = load_model(args.checkpoint)
+    demo = build_ui(model)
     demo.queue(max_size=20).launch(
         server_name=args.server_name,
         server_port=args.server_port,

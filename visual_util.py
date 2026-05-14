@@ -4,7 +4,6 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
-import copy
 import os
 
 import cv2
@@ -22,7 +21,6 @@ class SkySegDownloadError(RuntimeError):
 def predictions_to_glb(
     predictions: dict,
     conf_thres: float = 20.0,
-    filter_by_frames: str = "All",
     mask_black_bg: bool = False,
     mask_white_bg: bool = False,
     show_cam: bool = True,
@@ -38,7 +36,6 @@ def predictions_to_glb(
 
     conf_thres = max(2.0, float(conf_thres))
 
-    selected_frame_idx = _parse_frame_filter(filter_by_frames)
     points = predictions["world_points_from_depth"]
     conf = predictions["depth_conf"]
     if filter_depth_edges and "depth" in predictions:
@@ -49,12 +46,6 @@ def predictions_to_glb(
 
     if mask_sky and target_dir is not None:
         conf = apply_sky_mask(conf, target_dir)
-
-    if selected_frame_idx is not None:
-        points = points[selected_frame_idx][None]
-        conf = conf[selected_frame_idx][None]
-        images = images[selected_frame_idx][None]
-        camera_matrices = camera_matrices[selected_frame_idx][None]
 
     vertices = points.reshape(-1, 3)
     colors = _images_to_rgb(images).reshape(-1, 3)
@@ -103,15 +94,6 @@ def predictions_to_glb(
             integrate_camera_into_scene(scene, camera_to_world, color, scene_scale)
 
     return apply_scene_alignment(scene, extrinsics)
-
-
-def _parse_frame_filter(frame_filter: str) -> int | None:
-    if frame_filter in (None, "All", "all"):
-        return None
-    try:
-        return int(str(frame_filter).split(":")[0])
-    except (TypeError, ValueError, IndexError):
-        return None
 
 
 def _images_to_rgb(images: np.ndarray) -> np.ndarray:
@@ -270,7 +252,6 @@ def segment_sky(image_path: str, onnx_session, mask_filename: str) -> np.ndarray
 
 
 def run_skyseg(onnx_session, input_size: list[int], image: np.ndarray) -> np.ndarray:
-    image = copy.deepcopy(image)
     image = cv2.resize(image, dsize=(input_size[0], input_size[1]))
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image = np.array(image, dtype=np.float32)
@@ -282,7 +263,12 @@ def run_skyseg(onnx_session, input_size: list[int], image: np.ndarray) -> np.nda
     output_name = onnx_session.get_outputs()[0].name
     result = onnx_session.run([output_name], {input_name: image})
     result = np.array(result).squeeze()
-    result = (result - np.min(result)) / (np.max(result) - np.min(result))
+    result_min = np.min(result)
+    result_max = np.max(result)
+    if result_max > result_min:
+        result = (result - result_min) / (result_max - result_min)
+    else:
+        result = np.zeros_like(result)
     return (result * 255).astype("uint8")
 
 
@@ -298,7 +284,10 @@ def download_file_from_url(url: str, filename: str) -> None:
         os.replace(tmp_filename, filename)
     except (OSError, requests.RequestException) as error:
         if os.path.exists(tmp_filename):
-            os.remove(tmp_filename)
+            try:
+                os.remove(tmp_filename)
+            except OSError:
+                pass
         raise SkySegDownloadError(
             "Filter Sky could not download skyseg.onnx automatically. "
             f"Download it from {url} and place it at {os.path.abspath(filename)}."

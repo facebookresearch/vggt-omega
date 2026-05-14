@@ -74,10 +74,19 @@ simple, readable, and easy for researchers to modify.
 - Plan for two public 1B checkpoints:
   - a 512-resolution reconstruction checkpoint for camera and depth inference
   - a 256-resolution checkpoint with language alignment
+- VGGT-Omega checkpoints require access review. Users must request access and
+  provide their own local checkpoint file after approval. Do not design code,
+  docs, or demos around direct public internet downloads of model weights.
 - Keep checkpoint selection simple, for example with a small named preset or a
   direct checkpoint path. Do not introduce a large registry or config system.
 - The 512-resolution checkpoint should be the default for reconstruction
   examples unless a language-alignment example specifically needs the 256 model.
+- The Gradio demo should require an explicit local `--checkpoint` path. Do not
+  hide a default checkpoint path or silently auto-download model weights from
+  inside the demo.
+- If the demo supports only one checkpoint, load that model once at startup and
+  pass it directly to callbacks. Do not add a checkpoint-path cache or registry
+  for a single supported path.
 - Released checkpoints must be self-contained for inference. Model construction
   and checkpoint loading must not require downloading or separately caching
   DINOv3 pretrained weights.
