@@ -405,7 +405,7 @@ def build_ui(model: VGGTOmega, image_resolution: int):
                     conf_thres = gr.Slider(
                         minimum=2,
                         maximum=100,
-                        value=20,
+                        value=30,
                         step=0.1,
                         label="Confidence Threshold (%)",
                     )
