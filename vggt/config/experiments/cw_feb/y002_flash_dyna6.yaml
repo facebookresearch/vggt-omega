@@ -1,9 +1,0 @@
-# @package _global_
-#
-# y002_flash_dyna6: inherits y002_flash + dyna_ratio 6.0
-
-defaults:
-  - /experiments/cw/y002_flash
-
-dyna_ratio: 6.0
-

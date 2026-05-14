@@ -1,8 +1,0 @@
-# @package _group_
-_target_: vggt.data.datasets.cached.CachedDataset
-cache_dir: /checkpoint/repligen/jianyuan/samples_v1
-list_dir: /checkpoint/repligen/jianyuan/samples_v1/lists
-dataset_prefix: "_cached"
-len_dataset: 2000
-len_dataset_scale: 1.0
-

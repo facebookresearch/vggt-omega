@@ -1,8 +1,0 @@
-# @package _global_
-#
-
-defaults:
-  - /experiments/cw/w007_linear
-
-launcher:
-  num_nodes: 2

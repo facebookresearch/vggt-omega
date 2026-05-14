@@ -11,7 +11,6 @@ authors = [
 dependencies = [
     "numpy<2",
     "Pillow",
-    "huggingface_hub",
     "einops",
     "safetensors",
     "opencv-python",

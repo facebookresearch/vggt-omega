@@ -38,6 +38,12 @@ simple, readable, and easy for researchers to modify.
 - Released checkpoints must be self-contained for inference. Model construction
   and checkpoint loading must not require downloading or separately caching
   DINOv3 pretrained weights.
+- Keep the model class as a plain `torch.nn.Module`. Do not inherit
+  `PyTorchModelHubMixin` or require `huggingface_hub` just to construct, load,
+  or run the model.
+- Keep checkpoint download helpers separate from model initialization. If a
+  Hugging Face-specific dependency or compatibility layer seems necessary,
+  discuss it first.
 
 ## Import Hygiene
 
@@ -51,6 +57,18 @@ simple, readable, and easy for researchers to modify.
   local release package unless it has been checked.
 - Avoid adding more ambiguous top-level package names. Public user-facing APIs
   should prefer the `vggt_omega` package when we add the cleaned release wrapper.
+- Do not keep compatibility aliases by default. Once a public API name is
+  chosen, use that name consistently and remove the old names. If a change seems
+  to require a compatibility alias or migration path, discuss it first instead
+  of adding the alias silently.
+
+## Naming
+
+- Use `VGGT-Omega` as the public model name in papers, README text, release
+  notes, checkpoint names, and model cards.
+- Use `VGGTOmega` as the Python model class name.
+- Use `vggt_omega` as the Python package name.
+- Do not use `VGGTOMEGA` as a class name or compatibility alias.
 
 ## Precision Policy
 
@@ -86,6 +104,17 @@ simple, readable, and easy for researchers to modify.
 - Do not hide important behavior behind environment variables or implicit
   global state.
 - Preserve camera and geometry convention notes near the code that uses them.
+
+## DINOv3-Derived Code
+
+- Treat files under `vggt_omega/models/layers` as DINOv3-derived building
+  blocks. Keep them as close as practical to the public DINOv3 implementation.
+- Revert training-time convenience edits unless they are required for released
+  VGGT-Omega checkpoints or inference behavior.
+- When a DINOv3-derived file needs an Omega-specific change, keep the change
+  minimal and add a short `VGGT-Omega change:` comment explaining why it exists.
+- Prefer passing Omega-specific settings from `VGGTOmega` or `Aggregator`
+  instead of changing DINOv3 component defaults.
 
 ## Documentation Style
 

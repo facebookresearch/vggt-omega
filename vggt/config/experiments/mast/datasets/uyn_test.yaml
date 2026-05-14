@@ -1,9 +1,0 @@
-# @package _group_
-_target_: vggt.data.datasets.unified.UnifiedDataset
-UNIFIED_DIR: /checkpoint/repligen/jianyuan/data/uyn/
-dataset_prefix: "_uyn_test"
-step_range: 128
-sample_by_index: True
-len_dataset: 100
-
-is_synt: false
