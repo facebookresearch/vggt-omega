@@ -428,6 +428,87 @@ sliced from the final aggregator output before patch tokens:
 - the slice is made contiguous so it does not keep the patch-token storage alive
 - does not change camera, depth, or text-alignment computation
 
+Validation:
+
+- The earlier `registers` output was checked against dirty code before this API
+  rename and matched exactly.
+- After renaming the public output key to `camera_and_register_tokens`, only
+  lightweight syntax/import checks have been run. A full checkpoint-vs-dirty
+  forward comparison should be run before treating this API change as fully
+  verified.
+
+## README and Docs: Pass 1
+
+Status: initial public-facing documentation skeleton is in place.
+
+The README was rewritten from the original release skeleton into a first
+inference-focused public README. It now covers:
+
+- the release scope and model overview
+- the two planned 1B checkpoints
+- installation
+- explicit `torch.load` / `load_state_dict` checkpoint loading
+- camera/depth inference quick start
+- text-alignment checkpoint usage
+- output keys and shapes
+- `balanced` preprocessing
+- PyTorch scaled dot product attention / flash attention notes
+- release limitations, license, citation, and acknowledgements
+
+New docs were added:
+
+- `docs/README.md`
+- `docs/installation.md`
+- `docs/checkpoints.md`
+- `docs/inference.md`
+- `docs/preprocessing.md`
+- `docs/registers.md`
+
+Documentation choices:
+
+- The docs keep the release inference-only. They do not provide training,
+  fine-tuning, benchmark reproduction, or data annotation instructions.
+- The checkpoint docs describe raw PyTorch `state_dict` loading and avoid
+  `PyTorchModelHubMixin`.
+- The inference docs describe `camera_and_register_tokens` rather than a
+  `registers`-only output, because the camera token and registers are both used
+  by downstream heads.
+- The docs state that no separate DINOv3 pretrained-weight download is needed.
+- The README keeps the required legal footnote:
+  "This Release is intended to support the open source research community."
+
+Validation:
+
+- `python -m compileall -q vggt_omega/models/vggt_omega.py`
+- `git diff --check -- README.md docs/release_progress.md vggt_omega/models/vggt_omega.py`
+- local import check for `VGGTOmega`
+
+## README and Docs: Pass 2
+
+Status: README tone updated to match a ready research release.
+
+The README was rewritten again to follow the public VGGT repo style more
+closely:
+
+- centered title, badges, affiliations, and author list
+- citation near the top
+- concise overview
+- model zoo with checkpoint links
+- installation and quick start
+- output table
+- registers section
+- preprocessing and runtime notes
+- docs index, license, and acknowledgements
+
+The public README and user docs no longer proactively say that training,
+evaluation, fine-tuning, benchmark reproduction, or data annotation are not
+provided. The release should document what users can run, without making
+unnecessary promises or refusals about workflows that are not part of the
+current README.
+
+The required legal footnote remains in the README:
+"This Release is intended to support the open source research community."
+
 ## Open Cleanup Items
 
 - Continue simplifying files outside `layers/`, especially heads and utilities,

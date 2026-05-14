@@ -55,5 +55,5 @@ text_embedding = predictions["text_alignment_embedding"]
 text_token = predictions["text_alignment_token"]
 ```
 
-The released inference code does not include the Qwen/VLM teacher used during
-training.
+At inference time, the alignment head is a lightweight readout module and does
+not require a language model.

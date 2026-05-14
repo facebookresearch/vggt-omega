@@ -7,8 +7,7 @@ VGGT-Omega releases two 1B checkpoints.
 | `VGGT-Omega-1B-512` | `VGGTOmega()` | `512` | camera, depth, camera/register tokens |
 | `VGGT-Omega-1B-256-Text-Alignment` | `VGGTOmega(enable_alignment=True)` | `256` | camera, depth, camera/register tokens, text alignment |
 
-Both checkpoint files are raw PyTorch `state_dict` files. They do not include
-optimizer state, trainer state, or Qwen/VLM teacher weights.
+Both checkpoint files are raw PyTorch `state_dict` files.
 
 ## Download
 
@@ -65,5 +64,5 @@ The two checkpoints share the same camera head, dense depth head, and
 aggregator architecture. The 256 checkpoint additionally includes a lightweight
 text-alignment head that reads from the camera/register tokens.
 
-The text-alignment release does not instantiate or require the Qwen/VLM teacher
-used during training.
+The text-alignment head is self-contained at inference time and returns a
+normalized sequence embedding.

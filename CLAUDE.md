@@ -55,6 +55,17 @@ simple, readable, and easy for researchers to modify.
 - Keep preprocessing defaults, such as checkpoint-specific image size, outside
   the `nn.Module` unless the forward pass or module construction actually needs
   them.
+- Public forward outputs should use the agreed release names. In particular,
+  expose `camera_and_register_tokens` with shape `[B, S, 17, 2048]`, where token
+  `0` is the camera token and tokens `1:17` are the registers / scene tokens.
+  Do not add a `registers` compatibility alias unless discussed first.
+- When returning a small public slice from a large token tensor, make the slice
+  contiguous if otherwise it would keep large patch-token storage alive.
+- Preserve layer-index semantics for aggregator intermediates. If only a few
+  layers are needed at inference time, keep the output list aligned with the
+  original block indices and store `None` for uncached layers instead of
+  returning a compact list or dict. The default cached layers for the released
+  dense head are `4, 11, 17, 23`.
 - If a change is intended to be a cleanup or reorganization only, verify it
   against dirty code before considering it done.
 
@@ -70,6 +81,10 @@ simple, readable, and easy for researchers to modify.
 - Released checkpoints must be self-contained for inference. Model construction
   and checkpoint loading must not require downloading or separately caching
   DINOv3 pretrained weights.
+- Released checkpoints should be raw model-only PyTorch `state_dict` files that
+  load with `model.load_state_dict(torch.load(path))`. Avoid adding
+  `from_checkpoint`, automatic key mapping, or checkpoint-format compatibility
+  helpers unless discussed first.
 - Keep the model class as a plain `torch.nn.Module`. Do not inherit
   `PyTorchModelHubMixin` or require `huggingface_hub` just to construct, load,
   or run the model.
@@ -147,6 +162,17 @@ simple, readable, and easy for researchers to modify.
   when explicitly requested or when the change could plausibly affect numerical
   behavior.
 
+## Preprocessing Policy
+
+- Keep image loading simple. The public loader should support only the release
+  modes we actually document.
+- `balanced` is the default preprocessing mode. Do not call this mode `omega`
+  in public APIs or docs.
+- `max_size` is the second supported mode, for resizing the longest side to the
+  requested image resolution.
+- Both modes should crop extreme aspect ratios into `[0.5, 2.0]` before
+  resizing, then round output sizes to multiples of the patch size.
+
 ## DINOv3-Derived Code
 
 - Treat files under `vggt_omega/models/layers` as DINOv3-derived building
@@ -162,6 +188,16 @@ simple, readable, and easy for researchers to modify.
 
 - Write README and docs for researchers who want to run the model quickly.
 - Prefer minimal runnable examples over long explanations.
-- Clearly state what is included and what is intentionally not included.
 - Do not document training or evaluation workflows unless they are actually
   released in this repository.
+- Public README/docs should read like a ready research release, not like an
+  internal scope document. Do not proactively say that training, evaluation, or
+  fine-tuning are not provided; simply document the workflows we are releasing.
+- Keep the README focused on installation, checkpoint loading, camera/depth
+  inference, camera/register token outputs, text-alignment usage, visualization
+  and export pointers, license, and citation. Put deeper details in docs.
+- README checkpoint examples should use explicit `torch.load` and
+  `model.load_state_dict`, not `from_pretrained`, `from_checkpoint`, or
+  `PyTorchModelHubMixin`.
+- The README must include the legal footnote exactly:
+  "This Release is intended to support the open source research community."
