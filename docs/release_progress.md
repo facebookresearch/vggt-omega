@@ -242,7 +242,7 @@ with checkpoint weights were preserved.
 - `DenseHead` now hardcodes the released depth/confidence behavior:
   positional embedding on, linear prediction projections, depth `exp`, and
   confidence `1 + exp`.
-- `TextAlignmentHead` now contains only the released student branch.
+- `TextAlignmentHead` now contains only the released text-alignment readout.
 - `vggt_omega.models.heads.head_act` was removed because the remaining head
   activations are fixed and local.
 
@@ -277,27 +277,74 @@ The relevant checkpoint key mappings are recorded in
 `rename_state_dict_keys(state_dict, rules)` before strict loading. Future
 renames should extend the rule list and the record together.
 
+## Camera and Text Alignment Naming: Pass 1
+
+Status: complete for code names.
+
+The camera head now uses camera-facing internal names instead of pose-facing
+names:
+
+- `camera_head.pose_branch` -> `camera_head.camera_branch`
+- `pose_tokens` -> `camera_tokens`
+- `_apply_pose_activation` -> `_apply_camera_activation`
+
+The top-level text-alignment module is now named `text_alignment_head` instead
+of `alignment_head`.
+
+This pass changed checkpoint key prefixes:
+
+- `camera_head.pose_branch.` -> `camera_head.camera_branch.`
+- `alignment_head.` -> `text_alignment_head.`
+
+The mapping is recorded in `docs/checkpoint_key_renames.md` and applied by
+`VGGTOmega.from_checkpoint()`.
+
+## Text Alignment Head Cleanup: Pass 1
+
+Status: complete.
+
+`TextAlignmentHead` now follows the paper wording more closely. The old
+student wrapper was removed, and the head directly reads out a language-aligned
+sequence embedding from the camera/register tokens.
+
+Code names:
+
+- `sequence_token` -> `language_token`
+- `trunk` -> `readout_blocks`
+- final alignment `token_norm` -> `language_token_norm`
+- `projector` -> `embedding_projector`
+
+Prediction keys:
+
+- `alignment_student_embedding` -> `text_alignment_embedding`
+- `alignment_student_token` -> `text_alignment_token`
+
+This pass changed checkpoint key prefixes under the source
+`alignment_head.student.*` namespace; the current release model loads them under
+`text_alignment_head.*`.
+
 ## Text Alignment Checkpoint: Pass 1
 
 Status: complete for the first pass.
 
-The 256-resolution text-aligned checkpoint is now handled as a student-only
-release checkpoint:
+The 256-resolution text-aligned checkpoint is handled as a teacher-free release
+checkpoint:
 
 - Source checkpoint:
   `/home/jianyuan/ckpts/round_final/w008_linear_256_text_align_e30.pt`
 - Clean checkpoint:
   `/home/jianyuan/ckpts/round_final/w008_linear_256_text_align_e30_clean.pt`
 - Removed training state (`optimizer`, `scaler`, etc.).
-- Removed all `alignment_head.teacher.*` Qwen/VLM parameters.
-- Kept `alignment_head.student.*` parameters for release inference.
+- Removed all source `alignment_head.teacher.*` Qwen/VLM parameters.
+- Kept source `alignment_head.student.*` parameters for release inference,
+  mapped to `text_alignment_head.*` by the release loader.
 
-`VGGTOmega.from_checkpoint()` detects `alignment_head.student.*` keys and
-constructs the student-only alignment head automatically. Checkpoint metadata
-can still record preprocessing information such as image size, but the
-`nn.Module` does not store that metadata unless it is needed for forward or
-module construction. The release code does not instantiate Qwen and does not
-depend on `transformers`.
+`VGGTOmega.from_checkpoint()` detects `text_alignment_head.*` keys and
+constructs the text-alignment head automatically. Checkpoint metadata can still
+record preprocessing information such as image size, but the `nn.Module` does
+not store that metadata unless it is needed for forward or module construction.
+The release code does not instantiate Qwen and does not depend on
+`transformers`.
 
 Verification on the 8 example frames resized to 256 matched dirty code exactly
 when dirty code was run with the same training-time precision policy
@@ -306,8 +353,8 @@ when dirty code was run with the same training-time precision policy
 - `pose_enc`: max abs diff 0
 - `depth`: max abs diff 0
 - `depth_conf`: max abs diff 0
-- `alignment_student_embedding`: max abs diff 0
-- `alignment_student_token`: max abs diff 0
+- `text_alignment_embedding`: max abs diff 0
+- `text_alignment_token`: max abs diff 0
 
 ## Verification Notes
 
@@ -321,19 +368,19 @@ on a fixed input:
   checkpoints still matched dirty code exactly:
   - 512 no-alignment checkpoint: `pose_enc`, `depth`, `depth_conf`
   - 256 text-alignment checkpoint: `pose_enc`, `depth`, `depth_conf`,
-    `alignment_student_embedding`, `alignment_student_token`
+    `text_alignment_embedding`, `text_alignment_token`
 - After simplifying the aggregator, both release checkpoints still strict-loaded
   and matched dirty code exactly on the same fixed inputs:
   - 512 no-alignment checkpoint: max abs diff 0 for `pose_enc`, `depth`,
     `depth_conf`
   - 256 text-alignment checkpoint: max abs diff 0 for `pose_enc`, `depth`,
-    `depth_conf`, `alignment_student_embedding`, `alignment_student_token`
+    `depth_conf`, `text_alignment_embedding`, `text_alignment_token`
 - After moving the patch embedder into `Aggregator`, both release checkpoints
   still strict-loaded and matched dirty code exactly on the same fixed inputs:
   - 512 no-alignment checkpoint: max abs diff 0 for `pose_enc`, `depth`,
     `depth_conf`
   - 256 text-alignment checkpoint: max abs diff 0 for `pose_enc`, `depth`,
-    `depth_conf`, `alignment_student_embedding`, `alignment_student_token`
+    `depth_conf`, `text_alignment_embedding`, `text_alignment_token`
 
 Eight example frames have been extracted into `examples/` for future
 training-vs-release comparison tests.

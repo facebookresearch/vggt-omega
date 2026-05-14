@@ -37,7 +37,7 @@ class CameraHead(nn.Module):
             ]
         )
         self.trunk_norm = nn.LayerNorm(dim_in, eps=1e-5)
-        self.pose_branch = nn.Sequential(
+        self.camera_branch = nn.Sequential(
             nn.Linear(dim_in, dim_in // 2, bias=True),
             nn.GELU(),
             nn.Linear(dim_in // 2, 9, bias=True),
@@ -69,12 +69,12 @@ class CameraHead(nn.Module):
             camera_and_register_tokens = block(camera_and_register_tokens, rope_sincos)
 
         camera_and_register_tokens = camera_and_register_tokens.reshape(batch_size, num_frames, patch_token_start, -1)
-        pose_tokens = self.trunk_norm(camera_and_register_tokens[:, :, 0])
-        return _apply_pose_activation(self.pose_branch(pose_tokens))
+        camera_tokens = self.trunk_norm(camera_and_register_tokens[:, :, 0])
+        return _apply_camera_activation(self.camera_branch(camera_tokens))
 
 
-def _apply_pose_activation(pred_pose_enc: torch.Tensor) -> torch.Tensor:
-    translation = pred_pose_enc[..., :3]
-    quaternion = pred_pose_enc[..., 3:7]
-    fov = F.relu(pred_pose_enc[..., 7:]) + 0.01
+def _apply_camera_activation(raw_camera: torch.Tensor) -> torch.Tensor:
+    translation = raw_camera[..., :3]
+    quaternion = raw_camera[..., 3:7]
+    fov = F.relu(raw_camera[..., 7:]) + 0.01
     return torch.cat([translation, quaternion, fov], dim=-1)

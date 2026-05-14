@@ -91,3 +91,34 @@ Code names:
 
 The other renames in this pass are constructor arguments, local variables, or
 forward arguments, and do not affect checkpoint keys.
+
+## 2026-05-14: Camera and Text Alignment Naming Pass
+
+Code names:
+
+- `camera_head.pose_branch` -> `camera_head.camera_branch`
+- `pose_tokens` -> `camera_tokens`
+- `_apply_pose_activation` -> `_apply_camera_activation`
+- `pred_pose_enc` -> `raw_camera`
+- `VGGTOmega.alignment_head` -> `VGGTOmega.text_alignment_head`
+- `SequenceAlignmentStudent` wrapper removed
+- `sequence_token` -> `language_token`
+- `trunk` -> `readout_blocks`
+- final alignment `token_norm` -> `language_token_norm`
+- `projector` -> `embedding_projector`
+
+`state_dict` key prefixes:
+
+- `camera_head.pose_branch.` -> `camera_head.camera_branch.`
+- `alignment_head.student.pre_norm.` -> `text_alignment_head.token_norm.`
+- `alignment_head.student.extra_attention_blocks.` -> `text_alignment_head.readout_blocks.`
+- `alignment_head.student.sequence_token` -> `text_alignment_head.language_token`
+- `alignment_head.student.token_norm.` -> `text_alignment_head.language_token_norm.`
+- `alignment_head.student.projector.` -> `text_alignment_head.embedding_projector.`
+- `alignment_head.` -> `text_alignment_head.`
+
+Prediction keys:
+
+- `pose_enc`
+- `text_alignment_embedding`
+- `text_alignment_token`

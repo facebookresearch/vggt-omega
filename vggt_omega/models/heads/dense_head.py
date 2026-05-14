@@ -98,16 +98,16 @@ class DenseHead(nn.Module):
         fused = self.scratch_forward(multi_scale_features)
         fused = self._apply_pos_embed(fused, width, height)
 
-        raw_depth = self.proj(fused)
-        raw_depth = F.pixel_shuffle(raw_depth, self.final_shuffle_factor)
-        raw_depth = raw_depth.permute(0, 2, 3, 1)
+        depth_logits = self.proj(fused)
+        depth_logits = F.pixel_shuffle(depth_logits, self.final_shuffle_factor)
+        depth_logits = depth_logits.permute(0, 2, 3, 1)
 
-        raw_conf = self.proj_conf(fused)
-        raw_conf = F.pixel_shuffle(raw_conf, self.final_shuffle_factor)
-        raw_conf = raw_conf.permute(0, 2, 3, 1).squeeze(-1)
+        confidence_logits = self.proj_conf(fused)
+        confidence_logits = F.pixel_shuffle(confidence_logits, self.final_shuffle_factor)
+        confidence_logits = confidence_logits.permute(0, 2, 3, 1).squeeze(-1)
 
-        depth = torch.exp(raw_depth)
-        depth_conf = 1.0 + torch.exp(raw_conf)
+        depth = torch.exp(depth_logits)
+        depth_conf = 1.0 + torch.exp(confidence_logits)
 
         depth = depth.view(batch_size, num_frames, *depth.shape[1:])
         depth_conf = depth_conf.view(batch_size, num_frames, *depth_conf.shape[1:])
