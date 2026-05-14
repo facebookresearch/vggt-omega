@@ -10,6 +10,7 @@
   <span class="author"><a href="https://silent-chen.github.io/">Minghao Chen</a><sup>1</sup></span>
   <span class="author"><a href="https://scholar.google.com/citations?user=FUDsZkEAAAAJ&amp;hl=zh-CN">Shangzhan Zhang</a><sup>1</sup></span>
   <span class="author"><a href="https://nikitakaraevv.github.io/">Nikita Karaev</a><sup>1</sup></span>
+  <br>
   <span class="author"><a href="https://demuc.de/">Johannes Schönberger</a><sup>2</sup></span>
   <span class="author"><a href="https://scholar.google.com/citations?user=IJidh-UAAAAJ&amp;hl=fr">Patrick Labatut</a><sup>2</sup></span>
   <span class="author"><a href="https://scholar.google.com/citations?user=lJ_oh2EAAAAJ&amp;hl=en">Piotr Bojanowski</a><sup>2</sup></span>
