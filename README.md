@@ -30,17 +30,6 @@
 }
 ```
 
-## About
-
-**[CVPR 2026 Oral] VGGT-&Omega;** is a feed-forward reconstruction model that
-predicts camera parameters and depth maps for static and dynamic scenes from
-one or more input images.[^release]
-
-VGGT-&Omega; builds on VGGT with DINOv3 image features, register attention,
-a lightweight camera head, and a single dense depth head. The model returns
-camera/register tokens as compact scene-level features, and the
-language-aligned checkpoint exposes an additional text-aligned scene embedding.
-
 ## Model Zoo
 
 | Model | Resolution | Outputs | Access |
@@ -128,40 +117,6 @@ dimension and returns tensors with batch shape `[1, S, ...]`.
 The first token in `camera_and_register_tokens` is the camera token. The
 remaining 16 tokens are registers, also called scene tokens in the paper.
 
-### Language-Aligned Checkpoint
-
-The 256-resolution language-aligned checkpoint adds a lightweight readout head
-that attends to the camera/register tokens:
-
-```python
-model = VGGTOmega(enable_alignment=True).to(device).eval()
-model.load_state_dict(
-    torch.load(
-        "checkpoints/VGGT-Omega-1B-256-Text-Alignment/model.pt",
-        map_location="cpu",
-    )
-)
-
-images = load_and_preprocess_images(image_names, image_resolution=256).to(device)
-
-with torch.inference_mode():
-    predictions = model(images)
-
-text_embedding = predictions["text_alignment_embedding"]
-text_token = predictions["text_alignment_token"]
-```
-
-### Image Preprocessing
-
-The default image loader uses `balanced` preprocessing. It keeps the total
-number of patch tokens close to the requested resolution while allowing
-non-square image shapes. Before resizing, extreme aspect ratios are
-center-cropped into the range `[0.5, 2.0]`.
-
-```python
-images = load_and_preprocess_images(image_names, image_resolution=512)
-```
-
 </details>
 
 ## Interactive Demo
@@ -184,32 +139,10 @@ The demo accepts uploaded images or a video, runs camera and depth inference,
 and visualizes the depth-unprojected point cloud and predicted cameras as a GLB
 scene.
 
-## Runtime
-
-VGGT-&Omega; uses PyTorch scaled dot product attention by default. On modern
-CUDA setups this usually dispatches to the flash attention v2 backend. Flash
-attention v3 can be about twice as fast on H100 GPUs in our testing, but it is
-not required for the default setup.
-
-The backbone and aggregator run under mixed precision: bfloat16 when supported,
-otherwise float16. The camera, depth, and alignment heads run in float32.
-
-## Research Progression
-
-VGGT-&Omega; continues the feed-forward reconstruction line of work from VGGSfM
-and VGGT. It scales the architecture and data pipeline with register attention,
-a single dense prediction head, dynamic-scene supervision, and self-supervised
-learning from unlabeled videos.
-
-## Acknowledgements
-
-VGGT-&Omega; builds on VGGT and DINOv3. We also thank the broader 3D vision,
-reconstruction, and representation learning communities for the many open
-research projects that made this work possible.
-
 ## License
 
 See the [LICENSE](./LICENSE) file for details about the license under which
 this code is made available.
 
 [^release]: This Release is intended to support the open source research community.
+
