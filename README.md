@@ -4,18 +4,21 @@
 <a href="http://vggt-omega.github.io/" target="_blank" rel="noopener noreferrer">
   <img src="https://img.shields.io/badge/Project_Page-green" alt="Project Page">
 </a>
-<img src="https://img.shields.io/badge/CVPR_2026-Oral-b31b1b" alt="CVPR 2026 Oral">
-<a href="https://huggingface.co/facebook/VGGT-Omega-1B-512">
-  <img src="https://img.shields.io/badge/Request_Access-1B--512-blue" alt="Request 512 Checkpoint Access">
-</a>
-<a href="https://huggingface.co/facebook/VGGT-Omega-1B-256-Text-Alignment">
-  <img src="https://img.shields.io/badge/Request_Access-1B--256--Text--Alignment-blue" alt="Request 256 Text Alignment Checkpoint Access">
-</a>
 
-**[Visual Geometry Group, University of Oxford](https://www.robots.ox.ac.uk/~vgg/)**; **[Meta AI](https://ai.facebook.com/research/)**
+<p>
+  <span class="author"><a href="https://jytime.github.io/">Jianyuan Wang</a><sup>1,2</sup></span>
+  <span class="author"><a href="https://silent-chen.github.io/">Minghao Chen</a><sup>1</sup></span>
+  <span class="author"><a href="https://scholar.google.com/citations?user=FUDsZkEAAAAJ&amp;hl=zh-CN">Shangzhan Zhang</a><sup>1</sup></span>
+  <span class="author"><a href="https://nikitakaraevv.github.io/">Nikita Karaev</a><sup>1</sup></span>
+  <span class="author"><a href="https://demuc.de/">Johannes Schönberger</a><sup>2</sup></span>
+  <span class="author"><a href="https://scholar.google.com/citations?user=IJidh-UAAAAJ&amp;hl=fr">Patrick Labatut</a><sup>2</sup></span>
+  <span class="author"><a href="https://scholar.google.com/citations?user=lJ_oh2EAAAAJ&amp;hl=en">Piotr Bojanowski</a><sup>2</sup></span>
+  <span class="author"><a href="https://d-novotny.github.io/">David Novotny</a></span>
+  <span class="author"><a href="https://www.robots.ox.ac.uk/~vedaldi/">Andrea Vedaldi</a><sup>1,2</sup></span>
+  <span class="author"><a href="https://chrirupp.github.io/">Christian Rupprecht</a><sup>1</sup></span>
+</p>
 
-Jianyuan Wang, Minghao Chen, Shangzhan Zhang, Nikita Karaev, Johannes Sch&ouml;nberger,
-Patrick Labatut, Piotr Bojanowski, David Novotny, Andrea Vedaldi, Christian Rupprecht
+**<sup>1</sup>[Visual Geometry Group, University of Oxford](https://www.robots.ox.ac.uk/~vgg/)**; **<sup>2</sup>[Meta AI](https://ai.facebook.com/research/)**
 </div>
 
 ```bibtex
@@ -29,7 +32,7 @@ Patrick Labatut, Piotr Bojanowski, David Novotny, Andrea Vedaldi, Christian Rupp
 
 ## About
 
-VGGT-&Omega; (CVPR 2026 Oral) is a feed-forward reconstruction model that
+**[CVPR 2026 Oral] VGGT-&Omega;** is a feed-forward reconstruction model that
 predicts camera parameters and depth maps for static and dynamic scenes from
 one or more input images.[^release]
 
