@@ -50,8 +50,6 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
-Alternatively, you can install VGGT-&Omega; as a package
-(<a href="docs/package.md">click here</a> for details).
 
 Now, try the model with a few lines of code:
 
@@ -62,18 +60,13 @@ from vggt_omega.models import VGGTOmega
 from vggt_omega.utils.load_fn import load_and_preprocess_images
 from vggt_omega.utils.pose_enc import pose_encoding_to_extri_intri
 
-device = "cuda"
-checkpoint_path = "checkpoints/VGGT-Omega-1B-512/model.pt"
-image_names = [
-    "examples/znz_20260430_6_crop_top100_00.png",
-    "examples/znz_20260430_6_crop_top100_01.png",
-    "examples/znz_20260430_6_crop_top100_02.png",
-]
+checkpoint_path = "path/to/vggt_omega_1b_512.pt"
+image_names = ["path/to/imageA.png", "path/to/imageB.png", "path/to/imageC.png"]
 
 model = VGGTOmega().to(device).eval()
 model.load_state_dict(torch.load(checkpoint_path, map_location="cpu"))
 
-images = load_and_preprocess_images(image_names, image_resolution=512).to(device)
+images = load_and_preprocess_images(image_names, image_resolution=512).to("cuda")
 
 with torch.inference_mode():
     predictions = model(images)
@@ -90,31 +83,6 @@ camera_tokens = camera_and_register_tokens[:, :, :1]
 registers = camera_and_register_tokens[:, :, 1:]
 ```
 
-VGGT-&Omega; does not require a separate DINOv3 pretrained-weight download.
-The DINOv3-derived backbone weights are part of the released checkpoints.
-
-## Detailed Usage
-
-<details>
-<summary>Click to expand</summary>
-
-### Outputs
-
-For input images with shape `[S, 3, H, W]`, `VGGTOmega.forward()` adds a batch
-dimension and returns tensors with batch shape `[1, S, ...]`.
-
-| Key | Shape | Description |
-| --- | --- | --- |
-| `pose_enc` | `[B, S, 9]` | Camera encoding: translation, quaternion, vertical FoV, horizontal FoV. |
-| `depth` | `[B, S, H, W, 1]` | Predicted depth map. |
-| `depth_conf` | `[B, S, H, W]` | Depth confidence. |
-| `camera_and_register_tokens` | `[B, S, 17, 2048]` | Final-layer camera token followed by 16 registers / scene tokens. |
-| `images` | `[B, S, 3, H, W]` | Preprocessed input images, returned in eval mode. |
-
-The first token in `camera_and_register_tokens` is the camera token. The
-remaining 16 tokens are registers, also called scene tokens in the paper.
-
-</details>
 
 ## Interactive Demo
 
