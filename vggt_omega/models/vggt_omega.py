@@ -34,7 +34,13 @@ class VGGTOmega(nn.Module):
         with torch.autocast(device_type="cuda", dtype=amp_dtype):
             aggregated_tokens_list, patch_token_start = self.aggregator(images)
 
-        predictions = {}
+        final_tokens = aggregated_tokens_list[-1]
+        if final_tokens is None:
+            raise ValueError("Aggregator did not cache the final layer, which VGGTOmega needs.")
+
+        predictions = {
+            "registers": final_tokens[:, :, 1:patch_token_start],
+        }
         with torch.autocast(device_type="cuda", enabled=False):
             if self.camera_head is not None:
                 predictions["pose_enc"] = self.camera_head(

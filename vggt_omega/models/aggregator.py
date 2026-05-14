@@ -27,6 +27,7 @@ class Aggregator(nn.Module):
         mlp_ratio: float = 4.0,
         num_register_tokens: int = 16,
         register_attention_block_indices: list[int] = [2, 6, 9, 14, 20],
+        cached_layer_indices: tuple[int, ...] = (4, 11, 17, 23),
     ) -> None:
         super().__init__()
 
@@ -76,6 +77,7 @@ class Aggregator(nn.Module):
 
         self.depth = depth
         self.patch_size = patch_size
+        self.cached_layer_indices = set(cached_layer_indices)
         self.camera_token = nn.Parameter(torch.empty(1, 2, 1, embed_dim))
         self.register_token = nn.Parameter(torch.empty(1, 2, num_register_tokens, embed_dim))
         self.patch_token_start = 1 + num_register_tokens
@@ -98,7 +100,7 @@ class Aggregator(nn.Module):
     def forward(
         self,
         images: torch.Tensor,
-    ) -> tuple[list[torch.Tensor], int]:
+    ) -> tuple[list[torch.Tensor | None], int]:
         batch_size, num_frames, num_channels, height, width = images.shape
         if num_channels != 3:
             raise ValueError(f"Expected 3 input channels, got {num_channels}")
@@ -144,7 +146,10 @@ class Aggregator(nn.Module):
                 block_idx,
                 self.inter_frame_attention_types[block_idx],
             )
-            outputs.append(torch.cat([frame_tokens, tokens], dim=-1))
+            if block_idx in self.cached_layer_indices:
+                outputs.append(torch.cat([frame_tokens, tokens], dim=-1))
+            else:
+                outputs.append(None)
 
         return outputs, self.patch_token_start
 

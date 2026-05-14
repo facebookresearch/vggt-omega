@@ -41,10 +41,12 @@ class TextAlignmentHead(nn.Module):
 
     def forward(
         self,
-        aggregated_tokens_list: list[torch.Tensor],
+        aggregated_tokens_list: list[torch.Tensor | None],
         patch_token_start: int,
     ) -> dict[str, torch.Tensor]:
         tokens = aggregated_tokens_list[-1]
+        if tokens is None:
+            raise ValueError("Aggregator did not cache the final layer, which TextAlignmentHead needs.")
         if patch_token_start is None:
             raise ValueError("patch_token_start is required for TextAlignmentHead")
         if patch_token_start > tokens.shape[2]:

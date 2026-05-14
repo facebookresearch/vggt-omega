@@ -44,10 +44,12 @@ class CameraHead(nn.Module):
 
     def forward(
         self,
-        aggregated_tokens_list: list[torch.Tensor],
+        aggregated_tokens_list: list[torch.Tensor | None],
         patch_token_start: int,
     ) -> torch.Tensor:
         tokens = aggregated_tokens_list[-1]
+        if tokens is None:
+            raise ValueError("Aggregator did not cache the final layer, which CameraHead needs.")
         batch_size, num_frames, num_tokens, _ = tokens.shape
 
         if patch_token_start is None:

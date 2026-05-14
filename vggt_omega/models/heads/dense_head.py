@@ -71,7 +71,7 @@ class DenseHead(nn.Module):
 
     def forward(
         self,
-        aggregated_tokens_list: list[torch.Tensor],
+        aggregated_tokens_list: list[torch.Tensor | None],
         images: torch.Tensor,
         patch_token_start: int,
     ) -> tuple[torch.Tensor, torch.Tensor]:
@@ -83,7 +83,10 @@ class DenseHead(nn.Module):
 
         multi_scale_features = []
         for feature_idx, layer_idx in enumerate(self.intermediate_layer_idx):
-            x = aggregated_tokens_list[layer_idx][:, :, patch_token_start:]
+            x = aggregated_tokens_list[layer_idx]
+            if x is None:
+                raise ValueError(f"Aggregator did not cache layer {layer_idx}, which DenseHead needs.")
+            x = x[:, :, patch_token_start:]
             if x.dtype != torch.float32:
                 x = x.float()
 

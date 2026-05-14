@@ -414,6 +414,18 @@ Verification:
   - 256 text-alignment checkpoint: `pose_enc`, `depth`, `depth_conf`,
     `text_alignment_embedding`, `text_alignment_token`
 
+## Register Outputs: Pass 1
+
+Status: model now exposes the final-layer register tokens.
+
+`VGGTOmega.forward()` returns `predictions["registers"]`, sliced from the final
+aggregator output after the camera token and before patch tokens:
+
+- shape: `[B, S, 16, 2048]`
+- source: `aggregated_tokens_list[-1][:, :, 1:patch_token_start]`
+- excludes the camera token
+- does not change camera, depth, or text-alignment computation
+
 ## Open Cleanup Items
 
 - Continue simplifying files outside `layers/`, especially heads and utilities,
