@@ -43,6 +43,13 @@ simple, readable, and easy for researchers to modify.
 - Put simple constructor defaults directly in the signature. Do not add
   `DEFAULT_*` constants or duplicate `self.*` attributes unless another part of
   the code actually needs to read them.
+- Do not move one-file architecture values into module-level uppercase
+  constants just to make the file look organized. Prefer the public VGGT style:
+  keep defaults in the constructor signature or next to the module construction
+  that uses them.
+- When renaming modules or attributes that can change `state_dict` keys, record
+  the old and new key prefixes in `docs/checkpoint_key_renames.md` in the same
+  change.
 - Do not expose switches for unreleased capabilities such as point, track,
   training, or fine-tuning.
 - Keep preprocessing defaults, such as checkpoint-specific image size, outside

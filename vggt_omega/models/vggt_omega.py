@@ -7,8 +7,19 @@ import torch
 import torch.nn as nn
 
 from vggt_omega.models.aggregator import Aggregator
-from vggt_omega.models.heads import CameraHeadLinear, DPTLinearHead, TextAlignmentHead
+from vggt_omega.models.heads import CameraHead, DenseHead, TextAlignmentHead
 from vggt_omega.models.layers.vision_transformer import DinoVisionTransformer
+
+
+checkpoint_key_renames = [
+    ("depth_head.", "dense_head."),
+    ("camera_head.extra_attention_pre_norm.", "camera_head.token_norm."),
+    ("camera_head.extra_attention_blocks.", "camera_head.trunk."),
+    ("camera_head.token_norm.", "camera_head.trunk_norm."),
+    ("alignment_head.student.pre_norm.", "alignment_head.student.token_norm."),
+    ("alignment_head.student.extra_attention_blocks.", "alignment_head.student.trunk."),
+    ("alignment_head.student.token_norm.", "alignment_head.student.trunk_norm."),
+]
 
 
 class VGGTOmega(nn.Module):
@@ -27,8 +38,8 @@ class VGGTOmega(nn.Module):
         self.patch_embed = _build_patch_embed(patch_size=patch_size, embed_dim=embed_dim)
         self.aggregator = Aggregator(patch_size=patch_size, embed_dim=embed_dim)
         _warn_if_rope_not_max(self.patch_embed, self.aggregator)
-        self.camera_head = CameraHeadLinear(dim_in=2 * embed_dim) if enable_camera else None
-        self.depth_head = DPTLinearHead(dim_in=2 * embed_dim, patch_size=patch_size) if enable_depth else None
+        self.camera_head = CameraHead(dim_in=2 * embed_dim) if enable_camera else None
+        self.dense_head = DenseHead(dim_in=2 * embed_dim, patch_size=patch_size) if enable_depth else None
         self.alignment_head = TextAlignmentHead(dim_in=2 * embed_dim) if enable_alignment else None
 
     @classmethod
@@ -42,7 +53,7 @@ class VGGTOmega(nn.Module):
         **kwargs: Any,
     ) -> "VGGTOmega":
         checkpoint = torch.load(checkpoint_path, map_location=map_location, weights_only=False)
-        state_dict = _checkpoint_state_dict(checkpoint)
+        state_dict = rename_state_dict_keys(_checkpoint_state_dict(checkpoint), checkpoint_key_renames)
         if enable_alignment is None:
             enable_alignment = any(key.startswith("alignment_head.student.") for key in state_dict)
         model = cls(enable_alignment=enable_alignment, **kwargs)
@@ -79,8 +90,8 @@ class VGGTOmega(nn.Module):
                     patch_start_idx=patch_start_idx,
                 )
 
-            if self.depth_head is not None:
-                depth, depth_conf = self.depth_head(
+            if self.dense_head is not None:
+                depth, depth_conf = self.dense_head(
                     aggregated_tokens_list,
                     images=images,
                     patch_start_idx=patch_start_idx,
@@ -135,6 +146,23 @@ def _checkpoint_state_dict(checkpoint: Any) -> dict[str, torch.Tensor]:
     if isinstance(checkpoint, dict):
         return checkpoint
     raise TypeError(f"Unsupported checkpoint type: {type(checkpoint)!r}")
+
+
+def rename_state_dict_keys(
+    state_dict: dict[str, torch.Tensor],
+    rules: list[tuple[str, str]],
+) -> dict[str, torch.Tensor]:
+    renamed = {}
+    for key, value in state_dict.items():
+        new_key = key
+        for old_prefix, new_prefix in rules:
+            if key.startswith(old_prefix):
+                new_key = new_prefix + key[len(old_prefix) :]
+                break
+        if new_key in renamed:
+            raise ValueError(f"Checkpoint key rename collision: {key!r} maps to existing key {new_key!r}")
+        renamed[new_key] = value
+    return renamed
 
 
 def _warn_if_rope_not_max(patch_embed: nn.Module, aggregator: nn.Module) -> None:

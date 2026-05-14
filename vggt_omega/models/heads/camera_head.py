@@ -13,15 +13,16 @@ import torch.nn.functional as F
 from vggt_omega.models.layers import SelfAttentionBlock
 
 
-class CameraHeadLinear(nn.Module):
-    """Linear camera head used by the released VGGT-Omega checkpoints."""
+class CameraHead(nn.Module):
+    """Camera head used by the released VGGT-Omega checkpoints."""
 
     def __init__(self, dim_in: int = 2048) -> None:
         super().__init__()
 
-        self.extra_attention_pre_norm = nn.LayerNorm(dim_in, eps=1e-5)
-        self.extra_attention_in_proj = nn.Identity()
-        self.extra_attention_blocks = nn.ModuleList(
+        self.token_norm = nn.LayerNorm(dim_in, eps=1e-5)
+        self.input_proj = nn.Identity()
+        # Head-local transformer blocks that mix special tokens across frames.
+        self.trunk = nn.ModuleList(
             [
                 SelfAttentionBlock(
                     dim=dim_in,
@@ -37,7 +38,7 @@ class CameraHeadLinear(nn.Module):
                 for _ in range(4)
             ]
         )
-        self.token_norm = nn.LayerNorm(dim_in, eps=1e-5)
+        self.trunk_norm = nn.LayerNorm(dim_in, eps=1e-5)
         self.pose_branch = nn.Sequential(
             nn.Linear(dim_in, dim_in // 2, bias=True),
             nn.GELU(),
@@ -53,7 +54,7 @@ class CameraHeadLinear(nn.Module):
         batch_size, num_frames, num_tokens, _ = tokens.shape
 
         if patch_start_idx is None:
-            raise ValueError("patch_start_idx is required for CameraHeadLinear")
+            raise ValueError("patch_start_idx is required for CameraHead")
         if patch_start_idx > num_tokens:
             raise ValueError(f"patch_start_idx ({patch_start_idx}) exceeds token length ({num_tokens})")
 
@@ -63,16 +64,16 @@ class CameraHeadLinear(nn.Module):
                 tokens = tokens.float()
 
             special_tokens = tokens[:, :, :patch_start_idx]
-            special_tokens = self.extra_attention_pre_norm(special_tokens)
-            special_tokens = self.extra_attention_in_proj(special_tokens)
+            special_tokens = self.token_norm(special_tokens)
+            special_tokens = self.input_proj(special_tokens)
 
             special_tokens = special_tokens.reshape(batch_size, num_frames * patch_start_idx, -1)
             rope_sincos = None
-            for block in self.extra_attention_blocks:
+            for block in self.trunk:
                 special_tokens = block(special_tokens, rope_sincos)
 
             special_tokens = special_tokens.reshape(batch_size, num_frames, patch_start_idx, -1)
-            pose_tokens = self.token_norm(special_tokens[:, :, 0])
+            pose_tokens = self.trunk_norm(special_tokens[:, :, 0])
             return _apply_pose_activation(self.pose_branch(pose_tokens))
 
 

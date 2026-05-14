@@ -119,12 +119,12 @@ The first cleanup pass outside `layers/` removed code paths that only served
 training, config compatibility, or unused head variants:
 
 - Removed gradient checkpointing branches from the aggregator, camera head, and
-  depth head.
-- Removed the DPT checkpoint wrapper.
+  dense head.
+- Removed the dense-head checkpoint wrapper.
 - Removed the aggregator's Pi3/training initialization mode.
 - Removed patch-embed intermediate outputs from the release model path.
 - Removed camera-head training initialization helpers.
-- Removed unused DPT feature-only, no-confidence, half-dim, frame-chunk, and
+- Removed unused dense-head feature-only, no-confidence, half-dim, frame-chunk, and
   mask-prediction branches.
 - Updated head autocast disabling to `torch.autocast(device_type="cuda",
   enabled=False)`.
@@ -147,14 +147,14 @@ The shared VGGT-Omega architecture defaults now live in the corresponding
 release components:
 
 - `Aggregator`
-- `CameraHeadLinear`
-- `DPTLinearHead`
+- `CameraHead`
+- `DenseHead`
 - `TextAlignmentHead`
 
 This lets `VGGTOmega` instantiate those modules with simple public-style
 arguments such as `patch_size`, `embed_dim`, and feature toggles, instead of
 carrying checkpoint-specific `_build_aggregator()` or
-`_build_depth_head()` helper functions in the model entry file.
+`_build_dense_head()` helper functions in the model entry file.
 
 The file still keeps release-specific helpers for checkpoint loading,
 backbone/aggregator autocast, head fp32 execution, and RoPE behavior warnings.
@@ -170,14 +170,45 @@ release-facing constructor arguments needed by `VGGTOmega`. Training and
 exploration switches were removed from the public code path, while module names
 with checkpoint weights were preserved.
 
-- `CameraHeadLinear` now returns `pose_enc` directly instead of a one-element
+- `CameraHead` now returns `pose_enc` directly instead of a one-element
   `pose_enc_list`.
-- `DPTLinearHead` now hardcodes the released depth/confidence behavior:
+- `DenseHead` now hardcodes the released depth/confidence behavior:
   positional embedding on, linear prediction projections, depth `exp`, and
   confidence `1 + exp`.
 - `TextAlignmentHead` now contains only the released student branch.
 - `vggt_omega.models.heads.head_act` was removed because the remaining head
   activations are fixed and local.
+
+## Head Naming: Pass 1
+
+Status: complete for code names.
+
+The release head names now describe the public model structure directly:
+
+- `camera_head_linear.py` -> `camera_head.py`
+- `CameraHeadLinear` -> `CameraHead`
+- `dpt_linear_head.py` -> `dense_head.py`
+- `DPTLinearHead` -> `DenseHead`
+
+The top-level model attribute for dense prediction is now `dense_head` instead
+of `depth_head`. This changes checkpoint keys from `depth_head.*` to
+`dense_head.*`; the mapping is recorded in `docs/checkpoint_key_renames.md`.
+
+## Head Trunk Naming: Pass 1
+
+Status: complete for code names.
+
+The head-local self-attention blocks are now named `trunk`, matching public
+VGGT's style for the main processing stack inside a head. The old
+`extra_attention` name was a research-time name and made the blocks look like a
+temporary add-on.
+
+The relevant checkpoint key mappings are recorded in
+`docs/checkpoint_key_renames.md`.
+
+`VGGTOmega.from_checkpoint()` now applies the current key rename rules through
+`rename_state_dict_keys(state_dict, rules)` before strict loading. Future
+renames should extend the rule list and the record together.
 
 ## Text Alignment Checkpoint: Pass 1
 

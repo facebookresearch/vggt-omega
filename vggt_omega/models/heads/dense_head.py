@@ -17,54 +17,55 @@ import torch.nn.functional as F
 from .utils import create_uv_grid, position_grid_to_embed
 
 
-_CONF_PROJ_INIT_CONF_VALUE = 1.05
-_CONF_PROJ_INIT_RAW_BIAS = math.log(_CONF_PROJ_INIT_CONF_VALUE - 1.0)
-_FEATURES = 256
-_OUT_CHANNELS = [256, 512, 1024, 1024]
-_INTERMEDIATE_LAYER_IDX = [4, 11, 17, 23]
+class DenseHead(nn.Module):
+    """Dense prediction head used by the released VGGT-Omega checkpoints."""
 
-
-class DPTLinearHead(nn.Module):
-    """Depth head used by the released VGGT-Omega checkpoints."""
-
-    def __init__(self, dim_in: int = 2048, patch_size: int = 16) -> None:
+    def __init__(
+        self,
+        dim_in: int = 2048,
+        patch_size: int = 16,
+        features: int = 256,
+        out_channels: list[int] = [256, 512, 1024, 1024],
+        intermediate_layer_idx: list[int] = [4, 11, 17, 23],
+    ) -> None:
         super().__init__()
 
         if patch_size % 4 != 0:
             raise ValueError(
-                "DPTLinearHead expects patch_size divisible by 4 because the fused feature is decoded "
+                "DenseHead expects patch_size divisible by 4 because the fused feature is decoded "
                 f"from 1/4 scale. Got patch_size={patch_size}."
             )
 
         self.patch_size = patch_size
+        self.intermediate_layer_idx = intermediate_layer_idx
         self.final_shuffle_factor = patch_size // 4
         self.norm = nn.LayerNorm(dim_in, eps=1e-5)
 
         self.projects = nn.ModuleList(
-            [nn.Conv2d(in_channels=dim_in, out_channels=oc, kernel_size=1, stride=1, padding=0) for oc in _OUT_CHANNELS]
+            [nn.Conv2d(in_channels=dim_in, out_channels=oc, kernel_size=1, stride=1, padding=0) for oc in out_channels]
         )
         self.resize_layers = nn.ModuleList(
             [
-                _make_dpt_resize_layer(channels=_OUT_CHANNELS[0], resize_scale=4.0),
-                _make_dpt_resize_layer(channels=_OUT_CHANNELS[1], resize_scale=2.0),
-                _make_dpt_resize_layer(channels=_OUT_CHANNELS[2], resize_scale=1.0),
-                _make_dpt_resize_layer(channels=_OUT_CHANNELS[3], resize_scale=0.5),
+                _make_dense_resize_layer(channels=out_channels[0], resize_scale=4.0),
+                _make_dense_resize_layer(channels=out_channels[1], resize_scale=2.0),
+                _make_dense_resize_layer(channels=out_channels[2], resize_scale=1.0),
+                _make_dense_resize_layer(channels=out_channels[3], resize_scale=0.5),
             ]
         )
 
-        self.scratch = _make_scratch(_OUT_CHANNELS, _FEATURES)
+        self.scratch = _make_scratch(out_channels, features)
         self.scratch.stem_transpose = None
-        self.scratch.refinenet1 = _make_fusion_block(_FEATURES)
-        self.scratch.refinenet2 = _make_fusion_block(_FEATURES)
-        self.scratch.refinenet3 = _make_fusion_block(_FEATURES)
-        self.scratch.refinenet4 = _make_fusion_block(_FEATURES, has_residual=False)
+        self.scratch.refinenet1 = _make_fusion_block(features)
+        self.scratch.refinenet2 = _make_fusion_block(features)
+        self.scratch.refinenet3 = _make_fusion_block(features)
+        self.scratch.refinenet4 = _make_fusion_block(features, has_residual=False)
 
         self.proj = _make_prediction_head(
-            _FEATURES,
+            features,
             self.final_shuffle_factor**2,
         )
         self.proj_conf = _make_prediction_head(
-            _FEATURES,
+            features,
             self.final_shuffle_factor**2,
         )
         _init_small_conf_prediction_head(self.proj_conf)
@@ -76,15 +77,15 @@ class DPTLinearHead(nn.Module):
         patch_start_idx: int,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         if patch_start_idx is None:
-            raise ValueError("patch_start_idx is required for DPTLinearHead")
+            raise ValueError("patch_start_idx is required for DenseHead")
 
         batch_size, num_frames, _, height, width = images.shape
         patch_h, patch_w = height // self.patch_size, width // self.patch_size
 
         head_context = torch.autocast(device_type="cuda", enabled=False) if images.is_cuda else contextlib.nullcontext()
         with head_context:
-            features = []
-            for dpt_idx, layer_idx in enumerate(_INTERMEDIATE_LAYER_IDX):
+            multi_scale_features = []
+            for feature_idx, layer_idx in enumerate(self.intermediate_layer_idx):
                 x = aggregated_tokens_list[layer_idx][:, :, patch_start_idx:]
                 if x.dtype != torch.float32:
                     x = x.float()
@@ -92,12 +93,12 @@ class DPTLinearHead(nn.Module):
                 x = x.reshape(batch_size * num_frames, -1, x.shape[-1])
                 x = self.norm(x)
                 x = x.permute(0, 2, 1).reshape((x.shape[0], x.shape[-1], patch_h, patch_w))
-                x = self.projects[dpt_idx](x)
+                x = self.projects[feature_idx](x)
                 x = self._apply_pos_embed(x, width, height)
-                x = self.resize_layers[dpt_idx](x)
-                features.append(x)
+                x = self.resize_layers[feature_idx](x)
+                multi_scale_features.append(x)
 
-            fused = self.scratch_forward(features)
+            fused = self.scratch_forward(multi_scale_features)
             fused = self._apply_pos_embed(fused, width, height)
 
             raw_depth = self.proj(fused)
@@ -115,7 +116,7 @@ class DPTLinearHead(nn.Module):
             depth_conf = depth_conf.view(batch_size, num_frames, *depth_conf.shape[1:])
 
             if depth.dtype != torch.float32 or depth_conf.dtype != torch.float32:
-                raise TypeError(f"DPTLinearHead outputs must be fp32, got depth={depth.dtype}, conf={depth_conf.dtype}")
+                raise TypeError(f"DenseHead outputs must be fp32, got depth={depth.dtype}, conf={depth_conf.dtype}")
 
             return depth, depth_conf
 
@@ -142,7 +143,7 @@ class DPTLinearHead(nn.Module):
         return self.scratch.refinenet1(out, layer_1_rn, size=layer_1_rn.shape[2:])
 
 
-def _make_dpt_resize_layer(channels: int, resize_scale: float) -> nn.Module:
+def _make_dense_resize_layer(channels: int, resize_scale: float) -> nn.Module:
     if resize_scale == 1.0:
         return nn.Identity()
 
@@ -178,7 +179,7 @@ def _init_small_conf_prediction_head(proj: nn.Module) -> None:
         raise ValueError("Small confidence init requires a bias term for proj_conf")
 
     # With expp1 confidence activation this starts from conf ~= 1.05.
-    nn.init.constant_(proj.bias, _CONF_PROJ_INIT_RAW_BIAS)
+    nn.init.constant_(proj.bias, math.log(1.05 - 1.0))
 
 
 def _make_fusion_block(features: int, has_residual: bool = True) -> nn.Module:

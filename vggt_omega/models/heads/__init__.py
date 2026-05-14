@@ -1,5 +1,5 @@
-from .camera_head_linear import CameraHeadLinear
-from .dpt_linear_head import DPTLinearHead
+from .camera_head import CameraHead
+from .dense_head import DenseHead
 from .text_alignment_head import TextAlignmentHead
 
-__all__ = ["CameraHeadLinear", "DPTLinearHead", "TextAlignmentHead"]
+__all__ = ["CameraHead", "DenseHead", "TextAlignmentHead"]

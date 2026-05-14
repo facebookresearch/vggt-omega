@@ -12,12 +12,13 @@ class SequenceAlignmentStudent(nn.Module):
 
     def __init__(self, dim_in: int = 2048) -> None:
         super().__init__()
-        self.pre_norm = nn.LayerNorm(dim_in, eps=1e-5)
-        self.in_proj = nn.Identity()
+        self.token_norm = nn.LayerNorm(dim_in, eps=1e-5)
+        self.input_proj = nn.Identity()
         self.sequence_token = nn.Parameter(torch.zeros(1, 1, dim_in))
         nn.init.trunc_normal_(self.sequence_token, std=0.02)
 
-        self.extra_attention_blocks = nn.ModuleList(
+        # Head-local transformer blocks that mix special tokens across frames.
+        self.trunk = nn.ModuleList(
             [
                 SelfAttentionBlock(
                     dim=dim_in,
@@ -33,7 +34,7 @@ class SequenceAlignmentStudent(nn.Module):
                 for _ in range(4)
             ]
         )
-        self.token_norm = nn.LayerNorm(dim_in, eps=1e-5)
+        self.trunk_norm = nn.LayerNorm(dim_in, eps=1e-5)
         self.projector = nn.Sequential(
             nn.Linear(dim_in, dim_in // 2, bias=True),
             nn.GELU(),
@@ -54,17 +55,17 @@ class SequenceAlignmentStudent(nn.Module):
 
             batch_size, num_frames, _, _ = tokens.shape
             special_tokens = tokens[:, :, :patch_start_idx]
-            special_tokens = self.pre_norm(special_tokens)
-            special_tokens = self.in_proj(special_tokens)
+            special_tokens = self.token_norm(special_tokens)
+            special_tokens = self.input_proj(special_tokens)
             special_tokens = special_tokens.reshape(batch_size, num_frames * patch_start_idx, -1)
 
             sequence_token = self.sequence_token.expand(batch_size, -1, -1)
             joint_tokens = torch.cat([sequence_token, special_tokens], dim=1)
             rope_sincos = None
-            for block in self.extra_attention_blocks:
+            for block in self.trunk:
                 joint_tokens = block(joint_tokens, rope_sincos)
 
-            sequence_token = self.token_norm(joint_tokens[:, 0])
+            sequence_token = self.trunk_norm(joint_tokens[:, 0])
             projected = self.projector(sequence_token)
             return {
                 "alignment_student_embedding": F.normalize(projected, dim=-1),
