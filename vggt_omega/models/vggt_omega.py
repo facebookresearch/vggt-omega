@@ -7,10 +7,10 @@ import torch.nn as nn
 
 from vggt_omega.models.aggregator import Aggregator
 from vggt_omega.models.heads import CameraHead, DenseHead, TextAlignmentHead
-from vggt_omega.models.layers.vision_transformer import DinoVisionTransformer
 
 
 checkpoint_key_renames = [
+    ("patch_embed.", "aggregator.patch_embed."),
     ("depth_head.", "dense_head."),
     ("camera_head.extra_attention_pre_norm.", "camera_head.token_norm."),
     ("camera_head.extra_attention_blocks.", "camera_head.trunk."),
@@ -34,9 +34,8 @@ class VGGTOmega(nn.Module):
     ) -> None:
         super().__init__()
 
-        self.patch_embed = _build_patch_embed(patch_size=patch_size, embed_dim=embed_dim)
         self.aggregator = Aggregator(patch_size=patch_size, embed_dim=embed_dim)
-        _warn_if_rope_not_max(self.patch_embed, self.aggregator)
+        _warn_if_rope_not_max(self.aggregator)
         self.camera_head = CameraHead(dim_in=2 * embed_dim) if enable_camera else None
         self.dense_head = DenseHead(dim_in=2 * embed_dim, patch_size=patch_size) if enable_depth else None
         self.alignment_head = TextAlignmentHead(dim_in=2 * embed_dim) if enable_alignment else None
@@ -72,7 +71,7 @@ class VGGTOmega(nn.Module):
 
         amp_dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
         with torch.autocast(device_type="cuda", dtype=amp_dtype):
-            aggregated_tokens_list, patch_start_idx = self.aggregator(images, self.patch_embed)
+            aggregated_tokens_list, patch_start_idx = self.aggregator(images)
 
         predictions = {}
         with torch.autocast(device_type="cuda", enabled=False):
@@ -104,32 +103,6 @@ class VGGTOmega(nn.Module):
         return predictions
 
 
-def _build_patch_embed(patch_size: int, embed_dim: int) -> DinoVisionTransformer:
-    model = DinoVisionTransformer(
-        img_size=224,
-        patch_size=patch_size,
-        in_chans=3,
-        pos_embed_rope_base=100,
-        pos_embed_rope_normalize_coords="max",
-        pos_embed_rope_dtype="fp32",
-        embed_dim=embed_dim,
-        depth=24,
-        num_heads=16,
-        ffn_ratio=4,
-        qkv_bias=True,
-        drop_path_rate=0.0,
-        layerscale_init=1.0e-5,
-        norm_layer="layernormbf16",
-        ffn_layer="mlp",
-        ffn_bias=True,
-        proj_bias=True,
-        n_storage_tokens=4,
-        mask_k_bias=True,
-    )
-    model.init_weights()
-    return model
-
-
 def _checkpoint_state_dict(checkpoint: Any) -> dict[str, torch.Tensor]:
     if isinstance(checkpoint, dict) and "model" in checkpoint:
         return checkpoint["model"]
@@ -157,8 +130,8 @@ def rename_state_dict_keys(
     return renamed
 
 
-def _warn_if_rope_not_max(patch_embed: nn.Module, aggregator: nn.Module) -> None:
-    for name, module in (("patch_embed", patch_embed), ("aggregator", aggregator)):
+def _warn_if_rope_not_max(aggregator: nn.Module) -> None:
+    for name, module in (("aggregator.patch_embed", aggregator.patch_embed), ("aggregator", aggregator)):
         rope_embed = getattr(module, "rope_embed", None)
         normalize_coords = getattr(rope_embed, "normalize_coords", None)
         if normalize_coords != "max":

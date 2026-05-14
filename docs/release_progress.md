@@ -131,8 +131,8 @@ training, config compatibility, or unused head variants:
 
 The pass intentionally kept checkpoint-architecture choices such as
 `global_attn_mode`, `global_attn_indices`, `use_dino_clsreg`, and RoPE-related
-options. These affect possible checkpoint layouts or computation paths, so they
-should only be removed after checking all checkpoints intended for release.
+options until both release checkpoints could be checked. These were simplified
+later in `Aggregator Cleanup: Pass 1`.
 
 ## Model Entry Cleanup: Pass 1
 
@@ -140,8 +140,8 @@ Status: complete for the first pass.
 
 `vggt_omega.models.vggt_omega` now follows the public VGGT reading style more
 closely: the `VGGTOmega` class appears near the top of the file, and its
-constructor only wires together the patch embedder, aggregator, camera head,
-depth head, and optional alignment head.
+constructor only wires together the aggregator, camera head, depth head, and
+optional alignment head.
 
 The shared VGGT-Omega architecture defaults now live in the corresponding
 release components:
@@ -160,6 +160,49 @@ The file still keeps release-specific helpers for checkpoint loading,
 backbone/aggregator autocast, head fp32 execution, and RoPE behavior warnings.
 These replace the public VGGT `PyTorchModelHubMixin` path and preserve the
 training-time precision behavior.
+
+## Aggregator Cleanup: Pass 1
+
+Status: complete for the first simplified release shape.
+
+The aggregator now exposes only the architecture choices used by the released
+checkpoints. Training-time and exploration-only switches were removed from the
+public code path:
+
+- Removed dynamic block/FFN/dtype registries.
+- Removed unused global-attention modes and partial-ratio scheduling.
+- Removed DINO cls/register-token merging.
+- Removed patch-token residual and patch-embed RoPE matching branches.
+- Removed global RoPE, gradient checkpointing leftovers, and custom ViT init
+  helpers.
+
+The release aggregator keeps the trained behavior fixed: frame/global
+alternating attention, camera/register special tokens, max-normalized RoPE on
+frame patch tokens, Q/K normalization, and special-only global attention at
+blocks `[2, 6, 9, 14, 20]`.
+
+No checkpoint key rename was needed for this pass.
+
+## Patch Embed Ownership: Pass 1
+
+Status: complete.
+
+The DINOv3 patch embedder now lives inside `Aggregator`. The top-level
+`VGGTOmega` model no longer stores `self.patch_embed` or passes a patch-embed
+module into `Aggregator.forward()`.
+
+This makes the release inference path read as:
+
+- `VGGTOmega`: input handling, precision policy, and heads.
+- `Aggregator`: image normalization, DINOv3 patch embedding, special tokens,
+  RoPE, and alternating attention.
+
+This pass changed checkpoint key ownership:
+
+- `patch_embed.` -> `aggregator.patch_embed.`
+
+The mapping is recorded in `docs/checkpoint_key_renames.md` and applied by
+`VGGTOmega.from_checkpoint()`.
 
 ## Head Cleanup: Pass 2
 
@@ -255,6 +298,18 @@ on a fixed input:
   - 512 no-alignment checkpoint: `pose_enc`, `depth`, `depth_conf`
   - 256 text-alignment checkpoint: `pose_enc`, `depth`, `depth_conf`,
     `alignment_student_embedding`, `alignment_student_token`
+- After simplifying the aggregator, both release checkpoints still strict-loaded
+  and matched dirty code exactly on the same fixed inputs:
+  - 512 no-alignment checkpoint: max abs diff 0 for `pose_enc`, `depth`,
+    `depth_conf`
+  - 256 text-alignment checkpoint: max abs diff 0 for `pose_enc`, `depth`,
+    `depth_conf`, `alignment_student_embedding`, `alignment_student_token`
+- After moving the patch embedder into `Aggregator`, both release checkpoints
+  still strict-loaded and matched dirty code exactly on the same fixed inputs:
+  - 512 no-alignment checkpoint: max abs diff 0 for `pose_enc`, `depth`,
+    `depth_conf`
+  - 256 text-alignment checkpoint: max abs diff 0 for `pose_enc`, `depth`,
+    `depth_conf`, `alignment_student_embedding`, `alignment_student_token`
 
 Eight example frames have been extracted into `examples/` for future
 training-vs-release comparison tests.

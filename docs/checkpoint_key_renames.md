@@ -60,3 +60,16 @@ release checkpoints because they are `nn.Identity()` and have no parameters:
 
 - `camera_head.extra_attention_in_proj` -> `camera_head.input_proj`
 - `alignment_head.student.in_proj` -> `alignment_head.student.input_proj`
+
+## 2026-05-14: Patch Embed Ownership Pass
+
+Code ownership:
+
+- `VGGTOmega.patch_embed` -> `VGGTOmega.aggregator.patch_embed`
+
+The patch embedder now lives inside `Aggregator`, so the top-level model only
+wires the aggregator and heads together.
+
+`state_dict` key prefixes:
+
+- `patch_embed.` -> `aggregator.patch_embed.`
