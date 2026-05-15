@@ -1,5 +1,5 @@
-gradio==5.17.1
-gradio-client==1.7.1
+gradio==5.50.0
+gradio-client==1.14.0
 opencv-python
 trimesh
 matplotlib
