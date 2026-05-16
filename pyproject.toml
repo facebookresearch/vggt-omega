@@ -1,0 +1,40 @@
+[project]
+name = "vggt-omega"
+version = "0.0.1"
+description = "VGGT-Omega feed-forward camera and depth reconstruction."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Jianyuan Wang", email = "jianyuan@robots.ox.ac.uk"},
+]
+dependencies = [
+    "numpy<2",
+    "Pillow",
+    "einops",
+    "safetensors",
+    "opencv-python",
+]
+
+[project.optional-dependencies]
+demo = [
+    "gradio>=5.17.1",
+    "viser>=0.2.23",
+    "tqdm",
+    "scipy",
+    "trimesh",
+    "matplotlib",
+    "requests",
+    "onnxruntime",
+]
+export = [
+    "pycolmap>=3.10.0",
+]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["vggt_omega*"]

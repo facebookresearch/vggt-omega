@@ -1,0 +1,8 @@
+gradio==5.50.0
+gradio-client==1.14.0
+opencv-python
+trimesh
+matplotlib
+scipy
+requests
+onnxruntime

@@ -1,0 +1,7 @@
+torch>=2.3
+torchvision>=0.18
+numpy<2
+Pillow
+einops
+safetensors
+opencv-python
