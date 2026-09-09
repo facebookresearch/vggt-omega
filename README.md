@@ -25,6 +25,8 @@
 
 ## Updates
 
+- [Sep 10, 2026] We have released the [sequence lists](training/valid_seqs) for eight datasets used in our training.
+
 - [Sep 9, 2026] We added [guides and tools for preparing training data](training/dataset_preparation),
   covering dataset collection, conversion, cleaning, and agent-assisted visual review. We also added a
   [supervised geometric filtering pipeline](training/curation). The reannotated UCo3D data used to
