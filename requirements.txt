@@ -1,5 +1,5 @@
-torch>=2.3
-torchvision>=0.18
+torch>=2.6
+torchvision>=0.21
 numpy<2
 Pillow
 einops

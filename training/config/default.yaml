@@ -1,0 +1,257 @@
+defaults:
+  - default_dataset.yaml
+  - _self_
+
+exp_name: vggt_omega_1b
+
+data:
+  train:
+    dataset:
+      _target_: data.composed_dataset.ComposedDataset
+      dataset_configs:
+        # Point UNIFIED_DIR at a dataset converted to the unified layout. Adding a dataset is
+        # a new entry here; no code change is needed.
+        uco3d:
+          _target_: data.datasets.unified.UnifiedDataset
+          UNIFIED_DIR: /YOUR/PATH/TO/UNIFIED/uco3d
+          sequence_list_file: valid_seqs/uco3d.txt
+          dataset_prefix: _uco3d
+          is_synthetic: false
+          mixture_weight: 152
+          mixture_weight_scale: 1.0
+          frame_window: 256
+          max_interval: 64
+          max_interval_ratio: -1
+          max_depth: 256
+          sample_by_index: true
+          revisit_policy: avoid_if_possible
+        eden:
+          _target_: data.datasets.unified.UnifiedDataset
+          UNIFIED_DIR: /YOUR/PATH/TO/UNIFIED/eden
+          dataset_prefix: _eden
+          is_synthetic: true
+          mixture_weight: 177
+          mixture_weight_scale: 1.0
+          frame_window: 80
+          frame_window_policy: frame_count_power_law
+          max_interval_ratio: -1
+          jump_prob: 0
+          sample_by_index: false
+          revisit_policy: avoid_if_possible
+
+model:
+  _target_: vggt_omega.models.VGGTOmega
+  patch_size: 16
+  embed_dim: 1024
+  enable_camera: true
+  enable_depth: true
+  enable_alignment: false
+  # Activation checkpointing on the aggregator and patch embed. Required at this resolution
+  # and frame count; turn it off only if memory allows.
+  use_checkpoint: true
+  # The trainer establishes autocast itself.
+  autocast: false
+
+loss:
+  _target_: losses.loss.MultitaskLoss
+  normalize_predictions: false
+  normalize_gt: global
+  rel_to_first_cam: false
+  # Fraction of training during which the intrinsics loss is warmed up.
+  intrinsics_warmup_ratio: 0.6
+  camera:
+    weight: 5.0
+    weight_trans: 2.0
+    weight_rot: 1.0
+    weight_focal: 1.0
+    normalize_trans_by_gt_scale: true
+    weight_pairwise: 1.0
+    pairwise_weight_rotation: 1.0
+    pairwise_weight_translation: 1.0
+  depth:
+    weight: 5.0
+    weight_normal: 1.0
+    min_valid_pts: 100
+    abs_l1_loss_ratio: 1.0
+    rel_l1_loss_ratio: 0.2
+    # Gradient behaviour above the depth clamp. positive_ste keeps a gradient on
+    # over-predicting pixels instead of zeroing it; watch depth_positive_cap_ratio_max.
+    max_pixel_loss: 100.0
+    use_conf_loss: true
+    conf_alpha: 0.2
+    # Required with use_conf_loss and a positive-tail grad mode: the plain regression term is
+    # added alongside the confidence term.
+    add_separate_reg_loss: true
+    separate_reg_loss_weight: 1.0
+    # The gradient/normal losses below run on synthetic sequences only, so loss_normal reads
+    # zero on batches drawn entirely from real data.
+    apply_aux_loss_to_synthetic_only: true
+    gradient_loss_config:
+      - type: normal
+        scales: 1
+        min_valid_samples: 100
+        weight: 0.1
+      - type: grad
+        scales: 4
+        weight: 1.0
+  point:
+    weight: 5.0
+    min_valid_pts: 100
+    abs_l1_loss_ratio: 1.0
+    rel_l1_loss_ratio: 0.2
+    max_pixel_loss: 100.0
+  track:
+    weight: 5.0
+    max_pixel_loss: 1000.0
+    min_valid_pixels: 100
+
+optim:
+  filter_bias_and_bn: true
+  frozen_module_names: null
+  frozen_param_names: null
+
+  optimizer:
+    _target_: torch.optim.AdamW
+    lr: 2.0e-04
+    weight_decay: 0.05
+    betas: [0.9, 0.95]
+
+  amp:
+    enabled: true
+    amp_dtype: bfloat16
+
+  gradient_clip:
+    _target_: train_utils.gradient_clip.GradientClipper
+    configs:
+      - module_name: [aggregator, patch_embed]
+        max_norm: 1.0
+        norm_type: 2
+      - module_name: [dense_head]
+        max_norm: 1.0
+        norm_type: 2
+      - module_name: [camera_head]
+        max_norm: 1.0
+        norm_type: 2
+
+  # Schedulers are driven by the fraction of training completed, so they adapt to any
+  # max_epochs. 5% linear warmup, then cosine decay.
+  options:
+    lr:
+      - scheduler:
+          _target_: fvcore.common.param_scheduler.CompositeParamScheduler
+          schedulers:
+            - _target_: fvcore.common.param_scheduler.LinearParamScheduler
+              start_value: 5.0e-07
+              end_value: 2.0e-04
+            - _target_: fvcore.common.param_scheduler.CosineParamScheduler
+              start_value: 2.0e-04
+              end_value: 5.0e-07
+          lengths: [0.05, 0.95]
+          interval_scaling: [rescaled, rescaled]
+      # The patch embed trains at 0.1x the base learning rate.
+      - scheduler:
+          _target_: fvcore.common.param_scheduler.CompositeParamScheduler
+          schedulers:
+            - _target_: fvcore.common.param_scheduler.LinearParamScheduler
+              start_value: 5.0e-08
+              end_value: 2.0e-05
+            - _target_: fvcore.common.param_scheduler.CosineParamScheduler
+              start_value: 2.0e-05
+              end_value: 5.0e-08
+          lengths: [0.05, 0.95]
+          interval_scaling: [rescaled, rescaled]
+        param_names: ["*patch_embed*"]
+    weight_decay:
+      - scheduler:
+          _target_: fvcore.common.param_scheduler.ConstantParamScheduler
+          value: 0.05
+
+checkpoint:
+  save_dir: logs/${exp_name}/checkpoints
+  save_freq: 5
+  # Optional DINOv3 checkpoint. When no resume checkpoint exists, it initialises both the image
+  # backbone and aggregator blocks before any model_weight_path weights.
+  dinov3_weight_path: null
+  dinov3_weight_strict: true
+  # Weights-only initialisation, used when save_dir holds nothing to resume from. Leave null
+  # to train from random initialisation -- see the README for why that is unlikely to be what
+  # you want.
+  model_weight_path: null
+  model_weight_strict: false
+
+logging:
+  log_dir: logs/${exp_name}/logs
+  log_freq: 1
+  log_level_primary: INFO
+  log_level_secondary: WARNING
+  all_ranks: false
+  tensorboard_writer:
+    _target_: train_utils.tb_writer.TensorBoardLogger
+    path: logs/${exp_name}/tensorboard
+  scalar_keys_to_log:
+    train:
+      keys_to_log:
+        - loss_objective
+        - mean_depth_raw
+        - loss_camera
+        - loss_T
+        - loss_R
+        - loss_FL
+        - loss_PW
+        - pred_T_max
+        - Rac_5
+        - Rac_15
+        - Tac_5
+        - Tac_15
+        - Auc_3
+        - Auc_5
+        - Auc_10
+        - Auc_30
+        - loss_depth
+        - loss_pts_l1
+        - loss_reg_depth
+        - loss_conf_depth
+        - depth_conf_median
+        - depth_l1_unweighted
+        - depth_positive_cap_ratio_max
+        - loss_pts_l1_max
+        - loss_normal
+        - d1
+        - d2
+        - d3
+        - abs_rel
+        - sq_rel
+        - rmse
+        - rmse_log
+        - loss_point
+        - loss_point_l1
+        - point_l1_unweighted
+        - loss_point_l1_max
+        - loss_consistency
+        - loss_consistency_max
+        - consistency_valid_count
+
+distributed:
+  backend: nccl
+  find_unused_parameters: false
+  timeout_mins: 30
+  gradient_as_bucket_view: true
+  bucket_cap_mb: 25
+  broadcast_buffers: true
+
+cuda:
+  allow_tf32: false
+  cudnn_deterministic: false
+  cudnn_benchmark: false
+
+# ddp or fsdp. Our run used ddp. When selecting fsdp, set fsdp_settings to a mapping;
+# omitted fields use the FSDPSettings defaults in train_utils/fsdp.py.
+strategy: ddp
+fsdp_settings: null
+
+max_epochs: 240
+limit_train_batches: 1000
+accum_steps: 1
+seed_value: 264813
+start_epoch: 0
+env_variables: null

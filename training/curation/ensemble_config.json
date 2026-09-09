@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "random_state": 42,
+  "validation_split": 0.2,
+  "models": {
+    "catboost": {
+      "auto_class_weights": "Balanced",
+      "depth": 5,
+      "iterations": 100,
+      "learning_rate": 0.06
+    },
+    "extra_trees": {
+      "class_weight": "balanced",
+      "max_depth": 15,
+      "max_features": 0.5,
+      "n_estimators": 400
+    },
+    "xgboost": {
+      "learning_rate": 0.15,
+      "max_depth": 4,
+      "n_estimators": 200,
+      "scale_pos_weight": "auto"
+    },
+    "hist_gradient_boosting": {
+      "class_weight": "balanced",
+      "learning_rate": 0.03,
+      "max_iter": 400,
+      "max_leaf_nodes": 15
+    },
+    "lightgbm": {
+      "class_weight": "balanced",
+      "learning_rate": 0.1,
+      "n_estimators": 125,
+      "num_leaves": 18
+    },
+    "random_forest": {
+      "class_weight": "balanced",
+      "max_depth": 8,
+      "max_features": "sqrt",
+      "n_estimators": 200
+    }
+  }
+}

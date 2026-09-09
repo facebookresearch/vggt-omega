@@ -1,0 +1,65 @@
+# Dataloader and per-sample preprocessing. The concrete datasets live in default.yaml.
+data:
+  train:
+    _target_: data.dynamic_dataloader.DynamicTorchDataset
+    num_workers: 8
+    # Sampling is randomized inside the composed and base datasets.
+    shuffle: false
+    pin_memory: true
+    use_spawn: true
+    # Scales the per-GPU batch size selected for the sampled frame count. Lower it first if you
+    # run out of memory.
+    per_gpu_batch_scale: 1.0
+    seed: 264813
+
+    common_config:
+      training: true
+      # Defines a 416 x 416 reference pixel area; a random aspect ratio redistributes it across
+      # height and width, rounded to multiples of patch_size.
+      img_size: 416
+      patch_size: 16
+      # [min, max] frames per sample. The per-GPU batch size is looked up per frame count, so more
+      # frames automatically means fewer sequences per step.
+      frames_per_sample_range: [2, 32]
+      fix_img_num: -1
+      fix_aspect_ratio: 1.0
+      inside_random: true
+      samples_per_weight_unit: 1000
+      load_track: true
+      track_num: 512
+      rescale: true
+      rescale_aug: true
+      aug_principal_point: true
+      shared_intrinsics_resize_scale: false
+      same_preprocess_ratio: 0.95
+      random_rotation_ratio: 0.01
+      skip_extreme_rescale: false
+      enable_edge_rtol_thres: false
+      # Multiplies mixture_weight for datasets marked is_synthetic, to rebalance the mixture.
+      synthetic_len_scale: 1.0
+      # Frame sampling for datasets with frame_window_policy: frame_count_power_law.
+      frame_count_power_law_defaults:
+        full_window_frame_count: 9
+        window_scale_exponent: 0.5
+        min_window_scale: 0.5
+      # Probability that a dataset with revisit_policy: avoid_if_possible avoids revisits.
+      revisit_avoid_prob: 0.9
+
+      augs:
+        enable_image_aug: true
+        scales: [0.8, 1.2]
+        aspects: [0.5, 2.0]
+        use_discrete_aspect_ratios: true
+        cojitter: true
+        cojitter_ratio: 0.05
+        gray_scale: true
+        gau_blur: false
+        jpeg_compression: 0.1
+        low_res_blur: 0.05
+        low_res_blur_min_ratio: 0.5
+        color_jitter:
+          brightness: 0.5
+          contrast: 0.5
+          saturation: 0.4
+          hue: 0.1
+          p: 0.9

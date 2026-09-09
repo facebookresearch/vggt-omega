@@ -27,6 +27,7 @@ class LayerScale(nn.Module):
         self.inplace = inplace
         self.gamma = nn.Parameter(torch.empty(dim, device=device))
         self.init_values = init_values
+        self.reset_parameters()
 
     def reset_parameters(self):
         nn.init.constant_(self.gamma, self.init_values)

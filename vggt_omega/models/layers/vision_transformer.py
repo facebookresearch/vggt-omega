@@ -16,6 +16,7 @@ from typing import Any, Dict, List, Literal, Optional, Sequence, Tuple, Union
 import torch
 import torch.nn.init
 from torch import Tensor, nn
+from torch.utils.checkpoint import checkpoint
 
 from . import LayerScale, Mlp, PatchEmbed, RMSNorm, RopePositionEmbedding, SelfAttentionBlock, SwiGLUFFN
 from .utils import named_apply
@@ -92,6 +93,7 @@ class DinoVisionTransformer(nn.Module):
         mask_k_bias: bool = False,
         untie_cls_and_patch_norms: bool = False,
         untie_global_and_local_cls_norm: bool = False,
+        use_checkpoint: bool = False,
         device: Any | None = None,
         **ignored_kwargs,
     ):
@@ -106,6 +108,7 @@ class DinoVisionTransformer(nn.Module):
         self.n_blocks = depth
         self.num_heads = num_heads
         self.patch_size = patch_size
+        self.use_checkpoint = use_checkpoint
 
         self.patch_embed = PatchEmbed(
             img_size=img_size,
@@ -237,7 +240,10 @@ class DinoVisionTransformer(nn.Module):
                 rope_sincos = [self.rope_embed(H=H, W=W) for H, W in rope]
             else:
                 rope_sincos = [None for r in rope]
-            x = blk(x, rope_sincos)
+            if self.use_checkpoint and self.training:
+                x = checkpoint(blk, x, rope_sincos, use_reentrant=False)
+            else:
+                x = blk(x, rope_sincos)
         all_x = x
         output = []
         for idx, (x, masks) in enumerate(zip(all_x, masks_list)):

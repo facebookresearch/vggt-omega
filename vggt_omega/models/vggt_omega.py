@@ -4,6 +4,7 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
+import contextlib
 import warnings
 
 import torch
@@ -23,10 +24,13 @@ class VGGTOmega(nn.Module):
         enable_camera: bool = True,
         enable_depth: bool = True,
         enable_alignment: bool = False,
+        use_checkpoint: bool = False,
+        autocast: bool = True,
     ) -> None:
         super().__init__()
 
-        self.aggregator = Aggregator(patch_size=patch_size, embed_dim=embed_dim)
+        self.autocast = autocast
+        self.aggregator = Aggregator(patch_size=patch_size, embed_dim=embed_dim, use_checkpoint=use_checkpoint)
         _warn_if_rope_not_max(self.aggregator)
         self.camera_head = CameraHead(dim_in=2 * embed_dim) if enable_camera else None
         self.dense_head = DenseHead(dim_in=2 * embed_dim, patch_size=patch_size) if enable_depth else None
@@ -36,8 +40,12 @@ class VGGTOmega(nn.Module):
         if len(images.shape) == 4:
             images = images.unsqueeze(0)
 
-        amp_dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
-        with torch.autocast(device_type="cuda", dtype=amp_dtype):
+        if self.autocast:
+            amp_dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
+            aggregator_context = torch.autocast(device_type="cuda", dtype=amp_dtype)
+        else:
+            aggregator_context = contextlib.nullcontext()
+        with aggregator_context:
             aggregated_tokens_list, patch_token_start = self.aggregator(images)
 
         final_tokens = aggregated_tokens_list[-1]

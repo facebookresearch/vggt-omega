@@ -16,3 +16,7 @@ skyseg.onnx.tmp
 *.pt
 *.pth
 *.safetensors
+training/curation/**/*.joblib
+training/curation/**/*.jsonl
+training/curation/**/*.pkl
+training/curation/**/labels*.txt

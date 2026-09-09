@@ -23,27 +23,21 @@
 **<sup>1</sup>[Visual Geometry Group, University of Oxford](https://www.robots.ox.ac.uk/~vgg/)**; **<sup>2</sup>[Meta AI](https://ai.facebook.com/research/)**
 </div>
 
+## Updates
+
+- [Sep 8, 2026] We have released the [`training`](training) code and a [checkpoint from an additional training run](https://huggingface.co/facebook/VGGT-Omega/blob/main/vggt_omega_1b_416_reproduce.pt) to further validate reproducibility and address a potential concern with the original checkpoint. The new checkpoint should serve as the reference for future comparisons on the reported benchmarks.
+
 ## Pretrained models
 
-Before using the models, please request access to the checkpoints [here](https://huggingface.co/facebook/VGGT-Omega). Once your request is approved, you can download the checkpoints. Please note that access requests are reviewed by an automated process based on the information provided in the request.
-
-| Model | Resolution | Text alignment | Download |
-| :--- | :--- | :--- | :--- |
-| `VGGT-Omega-1B-512` | 512 | No | [Link](https://huggingface.co/facebook/VGGT-Omega/blob/main/vggt_omega_1b_512.pt) |
-| `VGGT-Omega-1B-256-Text-Alignment` | 256 | Yes | [Link](https://huggingface.co/facebook/VGGT-Omega/blob/main/vggt_omega_1b_256_text.pt) |
-
-The authors are not involved in the review process and cannot approve or reject individual applications. However, the [🤗 Hugging Face demo](https://huggingface.co/spaces/facebook/vggt-omega) is available to everyone.
+Before using the models, please request access to the checkpoints [here](https://huggingface.co/facebook/VGGT-Omega). Once your request is approved, you can download the checkpoints. Please note that access requests are reviewed by an automated process based on the information provided in the request. The authors are not involved in the review process and cannot approve or reject individual applications. However, the [🤗 Hugging Face demo](https://huggingface.co/spaces/facebook/vggt-omega) is available to everyone.
 
 
-## Important Notice
+| Model | Resolution | Text-aligned | Checkpoint | Date | Note |
+| :--- | :---: | :---: | :---: | :---: | :--- |
+| `VGGT-Omega-1B-512` | 512 | No | [Download](https://huggingface.co/facebook/VGGT-Omega/blob/main/vggt_omega_1b_512.pt) | <sub>May 2026</sub> | <sub>Recommended for in-the-wild applications, no benchmarking.</sub> |
+| `VGGT-Omega-1B-416-Reproduction` | 416 | No | [Download](https://huggingface.co/facebook/VGGT-Omega/blob/main/vggt_omega_1b_416_reproduce.pt) | <sub>Sep 2026</sub> | <sub>Retrained for benchmarking, as detailed in [reproduction.md](reproduction.md).</sub> |
+| `VGGT-Omega-1B-256-Text-Alignment` | 256 | Yes | [Download](https://huggingface.co/facebook/VGGT-Omega/blob/main/vggt_omega_1b_256_text.pt) | <sub>May 2026</sub> | |
 
-*August 18, 2026*
-
-We recently became aware of an issue that may have caused benchmark contamination in an ancestor checkpoint of the released 1B model. As a result, the performance of the released 1B model as reported in Table 1 and 2 (1B row) may be inflated.
-
-The model works correctly and it can continue to be used for downstream applications unrelated to these benchmarks. However, if you do use the model, or a derivative of it, to assess performance on these benchmarks, please do not rely on them until we conclude our investigation.
-
-We apologise for the mistake and the disruption caused by it.
 
 
 ## Quick Start
@@ -142,12 +136,12 @@ this code is made available.
 
 ```bibtex
 @misc{wang2026vggtomega,
-      title={VGGT-$\Omega$}, 
+      title={VGGT-$\Omega$},
       author={Jianyuan Wang and Minghao Chen and Shangzhan Zhang and Nikita Karaev and Johannes Schönberger and Patrick Labatut and Piotr Bojanowski and David Novotny and Andrea Vedaldi and Christian Rupprecht},
       year={2026},
       eprint={2605.15195},
       archivePrefix={arXiv},
       primaryClass={cs.CV},
-      url={https://arxiv.org/abs/2605.15195}, 
+      url={https://arxiv.org/abs/2605.15195},
 }
 ```
