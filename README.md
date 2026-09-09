@@ -25,6 +25,12 @@
 
 ## Updates
 
+- [Sep 9, 2026] We added [guides and tools for preparing training data](training/dataset_preparation),
+  covering dataset collection, conversion, cleaning, and agent-assisted visual review. We also added a
+  [supervised geometric filtering pipeline](training/curation). The reannotated UCo3D data used to
+  train VGGT-&Omega; is being uploaded to
+  [Hugging Face](https://huggingface.co/datasets/facebook/uco3d/tree/main/vggt_omega_anno).
+
 - [Sep 8, 2026] We have released the [`training`](training) code and a [checkpoint from an additional training run](https://huggingface.co/facebook/VGGT-Omega/blob/main/vggt_omega_1b_416_reproduce.pt) to further validate reproducibility and address a potential concern with the original checkpoint. The new checkpoint should serve as the reference for future comparisons on the reported benchmarks.
 
 ## Pretrained models
