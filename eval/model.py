@@ -63,7 +63,7 @@ class Predictor:
             images = load_and_preprocess_images(
                 image_paths,
                 mode="max_size",
-                image_resolution=416,
+                image_resolution=512,
                 patch_size=16,
             )
         if any("padding" in str(item.message) for item in caught):

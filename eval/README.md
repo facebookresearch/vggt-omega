@@ -48,8 +48,7 @@ python eval/evaluate.py \
   --output outputs/eth3d.json
 ```
 
-Change `eth3d` to `sintel` for Sintel. Evaluation uses `mode="max_size"` and
-`image_resolution=416`.
+Change `eth3d` to `sintel` for Sintel.
 
 ## Output
 
