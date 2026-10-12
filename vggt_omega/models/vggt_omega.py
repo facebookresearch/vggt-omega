@@ -41,7 +41,7 @@ class VGGTOmega(nn.Module):
             images = images.unsqueeze(0)
 
         if self.autocast:
-            amp_dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
+            amp_dtype = torch.bfloat16 if torch.cuda.is_bf16_supported(including_emulation=False) else torch.float16
             aggregator_context = torch.autocast(device_type="cuda", dtype=amp_dtype)
         else:
             aggregator_context = contextlib.nullcontext()
